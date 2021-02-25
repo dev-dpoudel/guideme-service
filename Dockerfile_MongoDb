@@ -1,0 +1,15 @@
+FROM registry.redhat.io/rhscl/mongodb-36-rhel7
+
+
+# This is Default Port Mapping for MongoDB server conection port 27017. In case of using custom port , chnge this
+EXPOSE 27017
+
+# Change this to UID that matches your username on the host
+# Note: RUN commands before this line will execute as root in the container
+# RUN commands after will execute under this non-privileged UID
+USER 1000:1000
+
+# Default cmd when container is started
+# Get Mongod to listen on all interfaces so we can connect from outside the container
+# The db path can be changed. 
+CMD mongod --dbpath /data/db

@@ -1,12 +1,12 @@
 # import from typing
-from typing import Optional
 # import from fastapi
 from fastapi import FastAPI
-from fastapi import Depends
 from fastapi.middleware.cors import CORSMiddleware
 # import from pydantic
 # Custom written import
-from dependencies.pagination import page_info
+from authentication.router import user
+from items.router import item
+
 
 # Instantiate FastAPI instance
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
@@ -31,7 +31,12 @@ app.add_middleware(
 )
 
 
+# Provide router definition for application modules
+app.include_router(user)
+app.include_router(item)
+
+
 # Declare a routing function server
 @app.get("/")
-async def main(page: Optional[page_info] = Depends(page_info)):
-    return page
+async def root():
+    return {"message": "Hello Bigger Applications!"}
