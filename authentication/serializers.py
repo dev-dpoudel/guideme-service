@@ -1,5 +1,5 @@
 from typing import Optional, List, Dict
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 from datetime import date, datetime
 
 
@@ -82,7 +82,12 @@ class UserBase(BaseModel):
         description="Is User Active",
         alias="isActive"
     )
-
+    email_address: Optional[EmailStr] = Field(
+        None,
+        description="Is User Active",
+        alias="isActive"
+    )
+    
     # Configuration Examples
     class Config:
         schema_extra = {

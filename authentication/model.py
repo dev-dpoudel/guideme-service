@@ -94,6 +94,11 @@ class User(Document):
         help_text="Is User Active",
         defult=True
     )
+    # Account Email Address
+    email_address = Field.EmailField(
+        help_text="User Email Address",
+        null=True
+    )
     # Registered Date
     created_date = Field.DateTimeField(
         help_text="User Created Date",
