@@ -2,6 +2,8 @@
 # import from fastapi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security import OAuth2PasswordBearer
+from fastapi import Depends
 # import from pydantic
 # Custom written import
 from authentication.router import user
@@ -11,6 +13,9 @@ from items.router import item
 # Instantiate FastAPI instance
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
 app = FastAPI()
+
+# Declare Authentication Scheme Parameters
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 # Decleare CORS allowed origins
 # List of Allowed host
@@ -40,3 +45,9 @@ app.include_router(item)
 @app.get("/")
 async def root():
     return {"message": "Hello Bigger Applications!"}
+
+
+# Declare Method with Dependency to use authentication scheme
+@app.get("/auth/")
+async def read_items(token: str = Depends(oauth2_scheme)):
+    return {"token": token}
