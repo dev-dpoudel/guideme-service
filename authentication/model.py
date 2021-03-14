@@ -21,12 +21,12 @@ class User(Document):
         required=True,
         primary_key=True,
         unique=True,
-        max_length=20
+        max_length=56
     )
 
     # User Profile Image
-    first_name = Field.ImageField(
-        help_text="Price Image",
+    profile = Field.ImageField(
+        help_text="Profile Image",
         null=True
     )
 
@@ -34,23 +34,25 @@ class User(Document):
     group = Field.ListField(
         Field.LazyReferenceField('Group', reverse_delete_rule=PULL),
         help_text="Assigned User Groups",
-        default=list
+        default=list,
+        null=True
     )
 
     # Username for the user
     first_name = Field.StringField(
         help_text="First Name of the user",
-        max_length=20
+        max_length=50
     )
     # Surname of the user
     last_name = Field.StringField(
         help_text="Last Name of the User",
-        max_length=20
+        max_length=50
     )
     # Prefered Name of user
     prefered_name = Field.StringField(
         help_text="Prefered Name of the user",
-        max_length=20
+        max_length=20,
+        null=True
     )
     # Birthdate
     birth_date = Field.DateTimeField(
@@ -60,27 +62,32 @@ class User(Document):
     # Nationality
     country = Field.StringField(
         help_text="Country",
-        max_length=30
+        max_length=30,
+        null=True
     )
     # City
     city = Field.StringField(
         help_text="City",
-        max_length=30
+        max_length=30,
+        null=True
     )
     # Postal/Zip Code
     zip = Field.StringField(
         help_text="Zip Code",
-        max_length=8
+        max_length=8,
+        null=True
     )
     # Current Address
     address = Field.StringField(
         help_text="Contact Address",
-        max_length=100
+        max_length=100,
+        null=True
     )
     # Permanent Address
     perm_address = Field.StringField(
         help_text="Permanent Address",
-        max_length=100
+        max_length=100,
+        null=True
     )
     # User status
     is_active = Field.BooleanField(
@@ -104,7 +111,7 @@ class Group(Document):
     ''' Defines User Group for Operations'''
     # Name of the group
     name = Field.StringField(
-        help_text="Name of the User",
+        help_text="Name of the Group",
         max_length=20
     )
     # Menu Assigned to each group
@@ -112,6 +119,7 @@ class Group(Document):
         Field.LazyReferenceField('Scope', reverse_delete_rule=PULL),
         help_text="Associated Menu",
         default=list,
+        null=True
     )
     # Modified date
     modified_date = Field.DateTimeField(
@@ -131,7 +139,7 @@ class Scope(Document):
     )
     # Permission type : space seperated (read/write/update/delete)
     permission = Field.ListField(
-        Field.String(max_length=20),
+        Field.String(max_length=50),
         help_text="Permission Enabled : Space Seperated List",
         default=list,
     )
