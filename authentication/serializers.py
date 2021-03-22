@@ -3,14 +3,6 @@ from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 
 
-# Model for Object Id
-class ObjectId(BaseModel):
-    oid: str = Field(None,
-                     description="Object Id",
-                     db_field="$oid"
-                     )
-
-
 # Model for User Scope
 class ScopeBase(BaseModel):
     menu: str = Field(...,
