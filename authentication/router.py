@@ -16,9 +16,10 @@ from .jsonserver import fake_users_db
 from .serializers import Token, UserIn, UserOut
 from .models import User
 # import ViewSets
+from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
 from dependencies.exceptions import not_found  # noqa E501
-from mixin.viewMixin import BasicViewSets  # noqa E501
+
 
 # Instantiate a API Router for user authentication
 user = APIRouter(prefix="/user",
@@ -29,8 +30,7 @@ user = APIRouter(prefix="/user",
 
 
 @cbv(user)
-class UserViewModel():
-    # class UserViewModel(BasicViewSets):
+class UserViewModel(BasicViewSets):
     '''
     Declaration for Class Based views for serializers Class
     '''

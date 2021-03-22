@@ -24,16 +24,15 @@ class BaseViewModel:
         skip: No of records to skip
     '''
     Model = None
-    Output: BaseModel = None
-    Input: BaseModel = None
+    Output = None
     Query = None
-    Filter: dict = None
-    Ordering: list = None
-    Permission: list = None
-    fields: list = None
-    exclude: list = None
-    limit: int = 100
-    skip: int = 0
+    Filter = None
+    Ordering = None
+    Permission = None
+    fields = None
+    exclude = None
+    limit = 100
+    skip = 0
 
     def queryset(self):
         ''' Sets QuerySet Objects'''
