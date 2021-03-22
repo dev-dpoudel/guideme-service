@@ -1,11 +1,16 @@
+from functools import lru_cache
+# import from mongoengine
+from mongoengine import connect, disconnect
 # import from typing
 # import from fastapi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends
 # import from pydantic
-# Custom written import
+# import custom dependencies
+from config import AppSettings
+from authentication.oauth import oauth
+# import custom routers
 from authentication.router import user
 from items.router import item
 
@@ -14,8 +19,12 @@ from items.router import item
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
 app = FastAPI()
 
-# Declare Authentication Scheme Parameters
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Decalre Dependency for App Settings
+@lru_cache(maxsize=128)
+def get_settings():
+    return AppSettings()
+
 
 # Decleare CORS allowed origins
 # List of Allowed host
@@ -41,13 +50,43 @@ app.include_router(user)
 app.include_router(item)
 
 
-# Declare a routing function server
-@app.get("/")
-async def root():
-    return {"message": "Hello Bigger Applications!"}
+# Declare a startup Event
+@app.on_event("startup")
+async def startup_event():
+    ''' Declare instance for database '''
+    settings = get_settings()
+    connect(settings.db_name,
+            # host=settings.db_host,
+            # port=settings.db_port,
+            username=settings.db_username,
+            password=settings.db_password,
+            authentication_source=settings.db_auth_source,
+            alias='default'
+            )
+
+
+# Declare a startup Event
+@app.on_event("shutdown")
+def shutdown_event():
+    ''' Declare instance for database '''
+    disconnect(alias='default')
 
 
 # Declare Method with Dependency to use authentication scheme
 @app.get("/auth/")
-async def read_items(token: str = Depends(oauth2_scheme)):
+async def read_items(token: str = Depends(oauth)):
     return {"token": token}
+
+
+# Declare Endpoint for app settings and informations
+@app.get("/info")
+async def info(settings: AppSettings = Depends(get_settings)):
+    return {
+        "app_name": settings.app_name,
+        "admin_email": settings.admin_email,
+        "default_page_size": settings.default_page_size,
+        "token_active_time": "{0} minutes".format(settings.token_active_time),
+        "db": settings.db_name,
+        "db_host": settings.db_host,
+        "db_port": settings.db_port
+    }

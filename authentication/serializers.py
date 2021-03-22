@@ -1,6 +1,14 @@
 from typing import Optional, List, Dict
 from pydantic import BaseModel, Field, EmailStr
-from datetime import date, datetime
+from datetime import datetime
+
+
+# Model for Object Id
+class ObjectId(BaseModel):
+    oid: str = Field(None,
+                     description="Object Id",
+                     db_field="$oid"
+                     )
 
 
 # Model for User Scope
@@ -31,30 +39,31 @@ class UserBase(BaseModel):
     username: str = Field(...,
                           description="Unique username for user",
                           max_length=20,
-                          alias="userName"
+                          alias="username"
                           )
-    profile: Optional[float] = Field(
-        None, description="Profile Picture", lt=50
-    )
-    first_name: str = Field(...,
+    # profile: Optional[str] = Field(
+    #     None, description="Profile Picture", lt=50
+    # )
+    first_name: str = Field(None,
                             description="Given Name",
                             max_length=50,
-                            alias="firstName"
+                            alias="firstName",
+                            db_field="first_name"
                             )
-    last_name: str = Field(...,
+    last_name: str = Field(None,
                            description="Family Name",
                            max_length=50,
-                           alias="LastName"
+                           alias="lastName"
                            )
     prefered_name: str = Field(None,
                                description="Alias Name",
                                max_length=50,
-                               alias="Alias"
+                               alias="alias"
                                )
-    birth_date: date = Field(None,
-                             description="Date of Birth",
-                             alias="DOB"
-                             )
+    birth_date: datetime = Field(None,
+                                 description="Date of Birth",
+                                 alias="dob"
+                                 )
     country: str = Field(None,
                          description="Country",
                          max_length=30
@@ -84,10 +93,10 @@ class UserBase(BaseModel):
     )
     email_address: Optional[EmailStr] = Field(
         None,
-        description="Is User Active",
-        alias="isActive"
+        description="Email Address",
+        alias="emailAddress"
     )
-    
+
     # Configuration Examples
     class Config:
         schema_extra = {
@@ -106,25 +115,37 @@ class UserBase(BaseModel):
         }
 
 
-# Base user class
-class UserPut(UserBase):
+# Class for User Creation. Since, on frequent use single user instance is used
+class UserIn(UserBase):
     password: str = Field(...,
                           description="User Password",
-                          max_length=56
+                          max_length=200
                           )
 
 
-# Base user class
-class UserList(UserBase):
-    group: List[GroupBase] = Field(...,
+# User class for read-operation. Multiple records are fetched
+class UserOut(UserBase):
+    group: List[GroupBase] = Field(None,
                                    description="User Group"
                                    )
-    created_date: datetime = Field(...,
+    created_date: datetime = Field(None,
                                    description="Created Date",
                                    alias="createdDate"
                                    )
-    modified_date: datetime = Field(...,
+    modified_date: datetime = Field(None,
                                     description="Modified Date",
                                     alias="modifiedDate"
                                     )
-    age: Dict
+    age: Optional[Dict]
+
+
+# Declare Base Model for JWT Tokens
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+    scopes: List[ScopeBase] = []
+
+
+# Declare Model Calss for Token Data
+class TokenData(BaseModel):
+    username: Optional[str] = None

@@ -1,0 +1,7 @@
+# The key is unique and has to be kept private.
+# To Generate New use  openssl rand -hex 32
+SECRET_KEY = "1f2d98baf9dbd390b97a9750689297b12ea71fb6859219a797e1da111714b947"
+# Declare JWT Hashing ALGORITHM
+ALGORITHM = "HS256"
+# Session expiry time in minutes
+ACCESS_TOKEN_EXPIRE_MINUTES = 15
