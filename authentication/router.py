@@ -18,7 +18,7 @@ from .models import User
 # import ViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
 from dependencies.exceptions import not_found  # noqa E501
-from mixin.createMixin import BasicViewSets  # noqa E501
+from mixin.viewMixin import BasicViewSets  # noqa E501
 
 # Instantiate a API Router for user authentication
 user = APIRouter(prefix="/user",
