@@ -1,4 +1,5 @@
-from functools import lru_cache
+# import profilers
+# from fastapi_cprofile.profiler import CProfileMiddleware
 # import from mongoengine
 from mongoengine import connect, disconnect
 # import from typing
@@ -8,8 +9,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import Depends
 # import from pydantic
 # import custom dependencies
-from config import AppSettings
-from authentication.oauth import oauth
+from config.config import get_settings, AppSettings
+from authentication.oauthprovider import oauth
 # import custom routers
 from authentication.router import user
 from items.router import item
@@ -18,12 +19,6 @@ from items.router import item
 # Instantiate FastAPI instance
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
 app = FastAPI()
-
-
-# Decalre Dependency for App Settings
-@lru_cache(maxsize=128)
-def get_settings():
-    return AppSettings()
 
 
 # Decleare CORS allowed origins
@@ -43,6 +38,15 @@ app.add_middleware(
     allow_headers=["*"],
     max_age=600
 )
+
+# Add Profiling Middlewares
+# Cprofile with snakeviz is used currently. File must be with .prof ext
+# app.add_middleware(CProfileMiddleware,
+#                    enable=True,
+#                    server_app=app,
+#                    filename='/home/alfaaz/programs/logs/guideme/service.prof',
+#                    strip_dirs=False,
+#                    sort_by='cumulative')
 
 
 # Provide router definition for application modules
@@ -85,8 +89,10 @@ async def info(settings: AppSettings = Depends(get_settings)):
         "app_name": settings.app_name,
         "admin_email": settings.admin_email,
         "default_page_size": settings.default_page_size,
-        "token_active_time": "{0} minutes".format(settings.token_active_time),
+        "token_active_time": "{0} minutes".format(settings.session_time),
         "db": settings.db_name,
         "db_host": settings.db_host,
-        "db_port": settings.db_port
+        "db_port": settings.db_port,
+        "algorithm": settings.algorithm,
+        "secret_key": settings.secret_key
     }

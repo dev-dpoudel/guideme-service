@@ -3,15 +3,17 @@ from datetime import timedelta
 from typing import List
 # import fastapi components
 from fastapi import APIRouter
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from fastapi.security import OAuth2PasswordRequestForm
 # import fastapi utils for class based views
 # from fastapi_utils.cbv import cbv
 from dependencies.cbv import cbv
 # import custom dependencies
-from .oauth import get_active_user, ACCESS_TOKEN_EXPIRE_MINUTES
-from .oauth import get_session, authenticate_user
-from .jsonserver import fake_users_db
+from config.config import get_settings
+# from .oauth import get_active_user, ACCESS_TOKEN_EXPIRE_MINUTES
+# from .oauth import get_session, authenticate_user
+# from .jsonserver import fake_users_db
+from .oauthprovider import Authenticate
 # import custom serializers
 from .serializers import Token, UserIn, UserOut
 from .models import User
@@ -37,8 +39,8 @@ class UserViewModel(BasicViewSets):
 
     Model = User
     Output = UserOut
-    # Ordering = ['-username', 'country']
-    # limit = 1
+    Ordering = ['-username', 'country']
+    # limit = 100
     # skip = 0
     # fields = ['username']
     # Filter = {"username__ne": "alfaaz"}
@@ -69,25 +71,23 @@ class UserViewModel(BasicViewSets):
 
 
 @user.post("/token", tags=["authenticate"], response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(),
+                settings=Depends(get_settings)):
+
+    # User authentication module
+    Auth = Authenticate(secret_key=settings.secret_key,
+                        algorithm=settings.algorithm,
+                        token_exp_time=settings.session_time)
+
     # Authenticate User Credentials
-    user = authenticate_user(fake_users_db,
-                             form_data.username,
-                             form_data.password
-                             )
-    if not user:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect username or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    session_data = get_session(
-        data={"sub": user.username}, delta_exp=access_token_expires
+    user = Auth.authenticate_user(form_data.username,
+                                  form_data.password
+                                  )
+    # Expire Time for session
+    token_expire_time = timedelta(minutes=settings.session_time)
+    # Get session data
+    session_data = Auth.get_session(
+        data={"sub": user.username},
+        delta_exp=token_expire_time
     )
     return session_data
-
-
-@user.get("/me", response_model=UserIn)
-async def read_users_me(current_user: UserIn = Depends(get_active_user)):
-    return current_user

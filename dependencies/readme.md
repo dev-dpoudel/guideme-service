@@ -12,3 +12,6 @@ db.createUser({
   "readWriteAnyDatabase"
   ]
   })
+
+https://github.com/tiangolo/fastapi/tree/master/fastapi/security
+https://fastapi.tiangolo.com/advanced/security/oauth2-scopes/#security-in-decorator-dependencies
