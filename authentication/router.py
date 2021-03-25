@@ -10,9 +10,6 @@ from fastapi.security import OAuth2PasswordRequestForm
 from dependencies.cbv import cbv
 # import custom dependencies
 from config.config import get_settings
-# from .oauth import get_active_user, ACCESS_TOKEN_EXPIRE_MINUTES
-# from .oauth import get_session, authenticate_user
-# from .jsonserver import fake_users_db
 from .oauthprovider import Authenticate
 # import custom serializers
 from .serializers import Token, UserIn, UserOut
