@@ -1,17 +1,11 @@
 from pymongo import errors
-from mongoengine.errors import InvalidQueryError
+from mongoengine.errors import InvalidQueryError, LookUpError
 from pydantic import BaseModel
-from dependencies.exceptions import (already_exist,
-                                     not_found,
-                                     multiple_instance_found,
-                                     invalid_filter,
-                                     invalid_parameter,
-                                     invalid_type
-                                     )
+from dependencies.exceptions import ModelException
 
 
 # Declare base model settings
-class BaseViewModel:
+class BaseViewModel(ModelException):
     '''
         Basic View Model instance
         Query : Q object instance
@@ -42,41 +36,45 @@ class BaseViewModel:
             try:
                 queryset = queryset.filter(**self.Filter)
             except TypeError:
-                raise invalid_type('Filter')
+                raise self.invalid_type('Filter')
             except InvalidQueryError:
-                raise invalid_filter()
+                raise self.invalid_filter()
 
         elif self.Query:
             try:
                 queryset = queryset.filter(self.Query)
             except TypeError:
-                raise invalid_type('Query')
+                raise self.invalid_type('Query')
             except InvalidQueryError:
-                raise invalid_filter()
+                raise self.invalid_filter()
 
         if self.Ordering:
             try:
                 queryset = queryset.order_by(*self.Ordering)
             except TypeError:
-                raise invalid_type('Ordering')
+                raise self.invalid_type('Ordering')
             except AttributeError:
-                raise invalid_parameter('Ordering')
+                raise self.invalid_parameter('Ordering')
 
         if self.fields:
             try:
                 queryset = queryset.only(*self.fields)
             except TypeError:
-                raise invalid_type('fields')
+                raise self.invalid_type('fields')
             except AttributeError:
-                raise invalid_parameter('fields')
+                raise self.invalid_parameter('fields')
+            except LookUpError:
+                raise self.invalid_field(*self.fields)
 
         elif self.exclude:
             try:
                 queryset = queryset.exclude(*self.exclude)
             except TypeError:
-                raise invalid_type('exclude')
+                raise self.invalid_type('exclude')
+            except LookupError:
+                raise self.invalid_field(*self.exclude)
             except AttributeError:
-                raise invalid_parameter('exclude')
+                raise self.invalid_parameter('exclude')
 
         return queryset.skip(self.skip).limit(self.limit)
 
@@ -101,7 +99,7 @@ class CreateViewModel(BaseViewModel):
             instance = self.Model(**data.dict())
             instance.save()
         except errors.DuplicateKeyError:
-            raise already_exist("Model with PrimaryKey")
+            raise self.already_exist("Model with PrimaryKey")
         return self.Output(**instance._data)
 
 
@@ -117,7 +115,7 @@ class GetViewModel(BaseViewModel):
         try:
             instance = self.queryset().get(**Kwargs)
         except self.Model.DoesNotExist:
-            raise not_found(self.Model)
+            raise self.not_found(self.Model)
 
         return self.Output(**instance._data)
 
@@ -147,11 +145,11 @@ class UpdateViewModel(BaseViewModel):
             instance = self.queryset().get(**Kwargs)
             instance.update(**inward_data.dict())
         except errors.DuplicateKeyError:
-            raise already_exist(self.Model)
+            raise self.already_exist(self.Model)
         except self.Model.DoesNotExist:
-            raise not_found(self.Model)
+            raise self.not_found(self.Model)
         except self.Model.MultipleObjectsReturned:
-            raise multiple_instance_found(self.Model)
+            raise self.multiple_instance_found(self.Model)
 
         return self.Output(**instance._data)
 
@@ -166,16 +164,16 @@ class PatchViewModel(BaseViewModel):
     def patch(self, Kwargs: dict, inward_data: BaseModel):
         try:
             instance = self.queryset().get(**Kwargs)
-            instance_model = self.Model(**instance._data)
+            instance_model = self.Output(**instance._data)
             patch_data = inward_data.dict(exclude_unset=True)
             patched_instance = instance_model.copy(update=patch_data)
             instance.update(**patched_instance.dict())
         except errors.DuplicateKeyError:
-            raise already_exist(self.Model)
+            raise self.already_exist(self.Model)
         except self.Model.DoesNotExist:
-            raise not_found(self.Model)
+            raise self.not_found(self.Model)
         except self.Model.MultipleObjectsReturned:
-            raise multiple_instance_found(self.Model)
+            raise self.multiple_instance_found(self.Model)
 
         return self.Output(**instance._data)
 
@@ -191,9 +189,9 @@ class DeleteViewModel(BaseViewModel):
             instance = self.queryset().get(**Kwargs)
             instance.delete()
         except self.Model.MultipleObjectsReturned:
-            raise multiple_instance_found(self.Model)
+            raise self.multiple_instance_found(self.Model)
         except self.Model.DoesNotExist:
-            raise not_found(self.Model)
+            raise self.not_found(self.Model)
 
         return {"status_code": 200, "message": "delete sucessfully"}
 
@@ -209,7 +207,7 @@ class DeleteMultipleViewModel(BaseViewModel):
             instance = self.queryset()
             instance.delete()
         except self.Model.DoesNotExist:
-            raise not_found(self.Model)
+            raise self.not_found(self.Model)
 
         return {"status_code": 200, "message": "delete sucessfully"}
 

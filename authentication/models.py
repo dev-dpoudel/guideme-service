@@ -58,7 +58,8 @@ class User(Document):
         help_text="Unique Username",
         required=True,
         unique=True,
-        max_length=20
+        max_length=20,
+        db_field="username"
     )
 
     # Password for the username
@@ -69,8 +70,7 @@ class User(Document):
 
     # User Profile Image
     profile = Field.ImageField(
-        help_text="Profile Image",
-        null=True
+        help_text="Profile Image"
     )
 
     # User associated groups
@@ -83,21 +83,25 @@ class User(Document):
 
     # Username for the user
     first_name = Field.StringField(
+        db_field="first_name",
         help_text="First Name of the user",
-        max_length=50
+        max_length=50,
     )
     # Surname of the user
     last_name = Field.StringField(
+        db_field="last_name",
         help_text="Last Name of the User",
-        max_length=50
+        max_length=50,
     )
     # Prefered Name of user
     prefered_name = Field.StringField(
+        db_field="prefered_name",
         help_text="Prefered Name of the user",
         max_length=20
     )
     # Birthdate
     birth_date = Field.DateTimeField(
+        db_field="birth_date",
         help_text="Birthdate of the User"
     )
     # Nationality
@@ -121,31 +125,32 @@ class User(Document):
         max_length=100
     )
     # Permanent Address
-    perm_address = Field.StringField(
+    permanent_address = Field.StringField(
+        db_field="perm_address",
         help_text="Permanent Address",
         max_length=100
     )
     # User status
     is_active = Field.BooleanField(
+        db_field="is_active",
         help_text="Is User Active",
         defult=True
     )
     # Account Email Address
     email_address = Field.EmailField(
+        db_field="email_address",
         help_text="User Email Address"
     )
     # Registered Date
     created_date = Field.DateTimeField(
+        db_field="created_date",
         help_text="User Created Date",
         default=datetime.utcnow()
     )
     modified_date = Field.DateTimeField(
+        db_field="modified_date",
         help_text="Last Modification Date",
         default=datetime.utcnow()
     )
-
-    @property
-    def objectid(self):
-        return self.id.str
 
     meta = {'collection': 'users'}

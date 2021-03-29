@@ -52,15 +52,17 @@ class Authenticate:
             self.ALGORITHM = kwargs["algorithm"]
             self.TOKEN_EXP_TIME = kwargs["token_exp_time"]
 
-    def get_hash(self, value: str) -> str:
+    @classmethod
+    def get_hash(cls, value: str) -> str:
         '''Return input value as hashed string'''
-        return self.bcrypt.hash(value)
+        return cls.bcrypt.hash(value)
 
     # Verify Hashed String with corresponding un-hased input
     # Use passlib library context
-    def validate_hash(self, plain_value: str, hash_value: str) -> bool:
+    @classmethod
+    def validate_hash(cls, plain_value: str, hash_value: str) -> bool:
         ''' Validate input hash and plain string are same '''
-        return self.bcrypt.verify(plain_value, hash_value)
+        return cls.bcrypt.verify(plain_value, hash_value)
 
     # Return jwt access tokens
     def get_session(self, data: dict, delta_exp: Optional[timedelta] = None):
@@ -106,10 +108,10 @@ class Authenticate:
         user = self.get_user(username)
 
         # Validate Passwords
-        if not self.validate_hash(password, user.password):
-            return self.InvalidCredentials_exception
+        if self.validate_hash(password, user.password):
+            return user
 
-        return user
+        raise self.InvalidCredentials_exception
 
     # Set Username from input Token
     def validate_current_user(self, token):

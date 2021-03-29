@@ -1,41 +1,56 @@
-from fastapi import APIRouter, Depends, HTTPException
-
-from dependencies.pagination import page_info
-
-item = APIRouter(
-    prefix="/items",
-    tags=["items"],
-    dependencies=[Depends(page_info)],
-    responses={404: {"description": "Not found"}},
-)
-
-
-fake_items_db = {"plumbus": {"name": "Plumbus"}, "gun": {"name": "Portal Gun"}}
-
-
-@item.get(
-    "/",
-    tags=["read"],
-)
-async def read_items():
-    return fake_items_db
+# import common modules
+from typing import List
+# import fastapi components
+from fastapi import APIRouter
+from fastapi import Depends  # noqa E501
+# import fastapi utils for class based views
+# from fastapi_utils.cbv import cbv
+from dependencies.cbv import cbv
+# import custom dependencies
+from authentication.oauthprovider import Authenticate  # noqa E501
+# import custom serializers
+from .serializers import ProductBase
+from .models import Product
+# import ViewSets
+from mixin.viewMixin import BasicViewSets
+from mongoengine.queryset.visitor import Q  # noqa E501
+from dependencies.exceptions import ModelException  # noqa E501
 
 
-@item.get("/{item_id}")
-async def read_item(item_id: str):
-    if item_id not in fake_items_db:
-        raise HTTPException(status_code=404, detail="Item not found")
-    return {"name": fake_items_db[item_id]["name"], "item_id": item_id}
+# Instantiate a API Router for user authentication
+product = APIRouter(prefix="",
+                    tags=["products"],
+                    responses={404: {"description": "Not found"}
+                               }
+                    )
 
 
-@item.put(
-    "/{item_id}",
-    tags=["update"],
-    responses={403: {"description": "Operation forbidden"}},
-)
-async def update_item(item_id: str):
-    if item_id != "plumbus":
-        raise HTTPException(
-            status_code=403, detail="You can only update the item: plumbus"
-        )
-    return {"item_id": item_id, "name": "The great Plumbus"}
+@cbv(product)
+class ItemViewModel(BasicViewSets):
+    '''
+    Declaration for Class Based views for Item serializers Class
+    '''
+
+    Model = Product
+    Output = ProductBase
+    Ordering = ['+product_Id']
+
+    @product.get("/products", response_model=List[ProductBase])
+    async def list_items(self):
+        return self.list()
+
+    @product.get("/product/{product_Id}", response_model=ProductBase)
+    async def get_item(self, product_Id: str):
+        return self.get({"product_Id": product_Id})
+
+    @product.post("/product/create")
+    async def create_item(self, item: ProductBase):
+        return self.create(item)
+
+    @product.post("/product/patch")
+    async def patch_item(self, item: ProductBase):
+        return self.patch({"product_Id": item.product_Id}, item)
+
+    @product.post("/product/update")
+    async def update_item(self, item: ProductBase):
+        return self.put({"product_Id": item.product_Id}, item)

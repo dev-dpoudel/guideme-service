@@ -13,8 +13,8 @@ from config.config import get_settings, AppSettings
 from authentication.oauthprovider import oauth
 # import custom routers
 from authentication.router import user
-from items.router import item
-
+from items.router import product
+from permission.router import permission
 
 # Instantiate FastAPI instance
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
@@ -51,7 +51,8 @@ app.add_middleware(
 
 # Provide router definition for application modules
 app.include_router(user)
-app.include_router(item)
+app.include_router(product)
+app.include_router(permission)
 
 
 # Declare a startup Event

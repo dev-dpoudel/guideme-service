@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field
 
 
 # Class Declaration for Products
-class ProductBase(BaseModel):
+class BaseProduct(BaseModel):
     product_Id: str = Field(
         ...,
         description="Product Id",

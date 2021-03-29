@@ -1,4 +1,4 @@
-from typing import Optional, List, Dict
+from typing import List
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 
@@ -31,7 +31,6 @@ class UserBase(BaseModel):
     username: str = Field(...,
                           description="Unique username for user",
                           max_length=20,
-                          alias="username"
                           )
     # profile: Optional[str] = Field(
     #     None, description="Profile Picture", lt=50
@@ -39,22 +38,17 @@ class UserBase(BaseModel):
     first_name: str = Field(None,
                             description="Given Name",
                             max_length=50,
-                            alias="firstName",
-                            db_field="first_name"
                             )
     last_name: str = Field(None,
                            description="Family Name",
                            max_length=50,
-                           alias="lastName"
                            )
     prefered_name: str = Field(None,
                                description="Alias Name",
                                max_length=50,
-                               alias="alias"
                                )
     birth_date: datetime = Field(None,
                                  description="Date of Birth",
-                                 alias="dob"
                                  )
     country: str = Field(None,
                          description="Country",
@@ -72,22 +66,17 @@ class UserBase(BaseModel):
                          description="Contact Address",
                          max_length=100
                          )
-    perm_address: str = Field(
-        None,
-        description="Permanent Address",
-        max_length=100,
-        alias="permanentAddress"
-    )
-    is_active: bool = Field(
-        True,
-        description="Is User Active",
-        alias="isActive"
-    )
-    email_address: Optional[EmailStr] = Field(
-        None,
-        description="Email Address",
-        alias="emailAddress"
-    )
+    permanent_address: str = Field(None,
+                                   description="Permanent Address",
+                                   max_length=100,
+                                   )
+    is_active: bool = Field(True,
+                            description="Is User Active",
+                            alias="isActive"
+                            )
+    email_address: EmailStr = Field(None,
+                                    description="Email Address",
+                                    )
 
     # Configuration Examples
     class Config:
@@ -97,12 +86,14 @@ class UserBase(BaseModel):
                 "first_name": "Dinesh",
                 "last_name": "Poudel",
                 "prefered_name": "Alfaaz Ryon",
-                "birth_date": "1995-01-20",
+                "birth_Date": "1995-01-20",
                 "country": "Nepal",
                 "city": "kathmandu",
                 "zip": "44600",
                 "address": "Dhapasi-6,Tokha-6,kathmandu,Nepal",
-                "perm_address": "Dhapasi-6,Tokha-6,Kathmandu,Nepal"
+                "permanent_address": "Dhapasi-6,Tokha-6,Kathmandu,Nepal",
+                "email_address": "",
+                "is_active": ""
             }
         }
 
@@ -122,13 +113,10 @@ class UserOut(UserBase):
                                    )
     created_date: datetime = Field(None,
                                    description="Created Date",
-                                   alias="createdDate"
                                    )
     modified_date: datetime = Field(None,
                                     description="Modified Date",
-                                    alias="modifiedDate"
                                     )
-    age: Optional[Dict]
 
 
 # Declare Base Model for JWT Tokens
@@ -136,8 +124,3 @@ class Token(BaseModel):
     access_token: str
     token_type: str
     scopes: List[ScopeBase] = []
-
-
-# Declare Model Calss for Token Data
-class TokenData(BaseModel):
-    username: Optional[str] = None
