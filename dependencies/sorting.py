@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 # Model for Sorting
 class SortingModel(BaseModel):
     ''' Provides Model Definition for Filter '''
-    field: str = Field(..., description="Sortby Filed Name", min_length=3)
+    field: str = Field(None, description="Sortby Filed Name", min_length=3)
     type: str = Field("asc", description="Sort type", min_length=3)
 
 
@@ -54,6 +54,6 @@ class Sorters:
 
 
 # Filter Dependencies for Application
-async def ordering(sortinfo: Optional[List[SortingModel]]):
+async def app_ordering(sortinfo: Optional[List[SortingModel]] = None):
     instance = Sorters(sortinfo)
-    return instance
+    return instance.get_order_by()

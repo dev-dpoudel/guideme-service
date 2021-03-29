@@ -8,9 +8,9 @@ from mongoengine.queryset.visitor import Q
 # Model for Pagination Class
 class FilterModel(BaseModel):
     ''' Provides Model Definition for Filter '''
-    field: str = Form(..., description="Filtered Filed Name", min_length=3)
-    value: Any = Form(..., description="Filter Value")
-    expr: str = Form(..., description="Comparison type", min_length=2)
+    field: str = Form(None, description="Filtered Filed Name", min_length=3)
+    value: Any = Form(None, description="Filter Value")
+    expr: str = Form(None, description="Comparison type", min_length=2)
     combine: str = Form("and", description="Combination type", min_length=2)
 
 
@@ -94,6 +94,6 @@ class Filters:
 
 
 # Filter Dependencies for Application
-async def app_filter(filterinfo: Optional[List[FilterModel]]):
+async def app_filter(filterinfo: Optional[List[FilterModel]] = None):
     instance = Filters(filterinfo)
-    return instance
+    return instance.get_filters()

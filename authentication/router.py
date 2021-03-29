@@ -1,6 +1,6 @@
 # import common modules
 from datetime import timedelta
-from typing import List
+from typing import List, Optional
 # import fastapi components
 from fastapi import APIRouter
 from fastapi import Depends
@@ -19,6 +19,8 @@ from .models import User
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
 from dependencies.exceptions import ModelException
+from dependencies.filters import app_filter, FilterModel
+from dependencies.sorting import app_ordering, SortingModel
 
 
 # Instantiate a API Router for user authentication
@@ -64,18 +66,19 @@ class UserViewModel(BasicViewSets):
 
     Model = User
     Output = UserOut
-    # Ordering = ['-username', 'country']
-    # limit = 100
-    # skip = 0
-    # fields = ['username']
-    # Filter = {"username__ne": "alfaaz", "country__ne": "USA"}
-    # q = (Q(**{'username': 'alfaaz'}) | Q(**{'country__ne': 'Nepal'}))
-    # q = (Q(**{'country': 'USA'}) | Q(**{'is_active': True}))
-    # Query = q
-    # exclude = ['first_name']
 
-    @user.get("/list", tags=["users", "list"], response_model=List[UserOut])
-    async def list_user(self):
+    @user.post("/list", tags=["users", "list"], response_model=List[UserOut])
+    async def list_user(self,
+                        filters: FilterModel = Depends(app_filter),
+                        order_by: SortingModel = Depends(app_ordering)
+                        ):
+
+        # Set Filter and Sort Parameters
+        self.Filter = filters
+        if order_by:
+            self.Ordering = order_by
+        else:
+            self.Ordering = ['+username']
         return self.list()
 
     @user.get("/{username}", tags=["users", "get"], response_model=UserOut)
