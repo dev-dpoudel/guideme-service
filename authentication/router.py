@@ -13,7 +13,7 @@ from dependencies.cbv import cbv
 from config.config import get_settings
 from .oauthprovider import Authenticate
 # import custom serializers
-from .serializers import Token, UserBase as UserIn, UserOut
+from .serializers import Token, UserBase, UserIn, UserOut
 from .models import User
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
@@ -73,12 +73,11 @@ class UserViewModel(BasicViewSets):
                         order_by: SortingModel = Depends(app_ordering)
                         ):
 
+        self.SelectRelated = True
         # Set Filter and Sort Parameters
         self.Filter = filters
-        if order_by:
-            self.Ordering = order_by
-        else:
-            self.Ordering = ['+username']
+        self.Ordering = order_by if order_by else ['+username']
+
         return self.list()
 
     @user.get("/{username}", response_model=UserOut)
@@ -96,7 +95,7 @@ class UserViewModel(BasicViewSets):
         return self.create(user)
 
     @user.put("/update")
-    async def update_user(self, user: UserIn):
+    async def update_user(self, user: UserBase):
         return self.patch({"username": user.username}, user)
 
     @user.post("/update/password")
