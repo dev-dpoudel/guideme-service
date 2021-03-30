@@ -97,8 +97,6 @@ class UserViewModel(BasicViewSets):
 
     @user.put("/update")
     async def update_user(self, user: UserIn):
-        if user:
-            user.password = ""
         return self.patch({"username": user.username}, user)
 
     @user.post("/update/password")
