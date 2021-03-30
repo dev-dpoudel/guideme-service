@@ -1,5 +1,4 @@
 from pymongo import errors
-from typing import Optional
 from mongoengine.errors import InvalidQueryError, LookUpError
 from pydantic import BaseModel
 from dependencies.exceptions import ModelException
@@ -26,8 +25,8 @@ class BaseViewModel(ModelException):
     fields = None
     exclude = None
     SelectRelated = False
-    limit: Optional[int] = 100
-    skip: Optional[int] = 0
+    limit = 100
+    skip = 0
 
     def queryset(self):
         ''' Sets QuerySet Objects'''
