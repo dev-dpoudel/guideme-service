@@ -1,6 +1,6 @@
 # import common modules
 from datetime import timedelta
-from typing import List, Optional
+from typing import List
 # import fastapi components
 from fastapi import APIRouter
 from fastapi import Depends
@@ -67,7 +67,7 @@ class UserViewModel(BasicViewSets):
     Model = User
     Output = UserOut
 
-    @user.post("/list", tags=["users", "list"], response_model=List[UserOut])
+    @user.post("/list", response_model=List[UserOut])
     async def list_user(self,
                         filters: FilterModel = Depends(app_filter),
                         order_by: SortingModel = Depends(app_ordering)
@@ -81,11 +81,11 @@ class UserViewModel(BasicViewSets):
             self.Ordering = ['+username']
         return self.list()
 
-    @user.get("/{username}", tags=["users", "get"], response_model=UserOut)
+    @user.get("/{username}", response_model=UserOut)
     async def get_user(self, username: str):
         return self.get({"username": username})
 
-    @user.post("/create", tags=["users", "post"])
+    @user.post("/create")
     async def create_user(self,
                           username: str = Form(...),
                           password: str = Form(...)):
@@ -97,9 +97,11 @@ class UserViewModel(BasicViewSets):
 
     @user.put("/update")
     async def update_user(self, user: UserIn):
+        if user:
+            user.password = ""
         return self.patch({"username": user.username}, user)
 
-    @user.post("/update/password", tags=["users", "protected"])
+    @user.post("/update/password")
     async def update_password(self,
                               username: str = Form(...),
                               old_pass: str = Form(...),

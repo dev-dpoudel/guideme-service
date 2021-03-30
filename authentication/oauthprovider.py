@@ -1,12 +1,12 @@
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Optional, List
 # import fastapi libraries
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 # import passlib modules
 from passlib.context import CryptContext
 # import jwt modules
-from jose import JWTError, jwt
+from jose import jwt, exceptions
 # import from custom models
 from config.config import get_settings
 from .serializers import UserIn, Token
@@ -26,7 +26,7 @@ class Authenticate:
     bcrypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     # Scope for User
-    scopes = []
+    scopes: List[str] = []
 
     # Declare credential exception
     InvalidCredentials_exception = HTTPException(
@@ -71,9 +71,9 @@ class Authenticate:
 
         # Set Expiration Time
         if delta_exp:
-            expire: datetime = datetime.utcnow() + delta_exp
+            expire = datetime.utcnow() + delta_exp
         else:
-            expire: datetime = datetime.utcnow() + timedelta(minutes=15)
+            expire = datetime.utcnow() + timedelta(minutes=15)
 
         # Update expiration time in JWT settings
         session_input.update({"exp": expire})
@@ -114,6 +114,7 @@ class Authenticate:
         raise self.InvalidCredentials_exception
 
     # Set Username from input Token
+    # https://github.com/mpdavis/python-jose/blob/master/jose/exceptions.py
     def validate_current_user(self, token):
         try:
             payload = jwt.decode(token,
@@ -132,15 +133,16 @@ class Authenticate:
             return user
 
         # Expired signature error
-        except JWTError.ExpiredSignatureError:
+        except exceptions.ExpiredSignatureError:
             raise self.InvalidSignature_exception
 
         # Raise Invalid Token Error
-        except JWTError.InvalidTokenError:
+        except exceptions.JWTError:
             raise self.InvalidCredentials_exception
 
 
-def get_current_user(token: str, settings=Depends(get_settings)):
+def get_current_user(token: str = Depends(oauth),
+                     settings=Depends(get_settings)):
     ''' Get Current LoggedIn User '''
     Auth = Authenticate(secret_key=settings.secret_key,
                         algorithm=settings.algorithm,
@@ -151,7 +153,9 @@ def get_current_user(token: str, settings=Depends(get_settings)):
 
 # Get Current Active User
 async def get_active_user(current_user: UserIn = Depends(get_current_user)):
-    if current_user.is_active:
+    if not current_user:
+        return UserIn(username="Anonymous")
+    elif current_user.is_active:
         return current_user
     else:
         raise HTTPException(status_code=417, detail="User is inactive")

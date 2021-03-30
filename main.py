@@ -10,7 +10,7 @@ from fastapi import Depends
 # import from pydantic
 # import custom dependencies
 from config.config import get_settings, AppSettings
-from authentication.oauthprovider import oauth
+from authentication.oauthprovider import get_active_user
 # import custom routers
 from authentication.router import user
 from items.router import product
@@ -79,8 +79,8 @@ def shutdown_event():
 
 # Declare Method with Dependency to use authentication scheme
 @app.get("/auth/")
-async def read_items(token: str = Depends(oauth)):
-    return {"token": token}
+async def read_items(user=Depends(get_active_user)):
+    return {"User": user.username}
 
 
 # Declare Endpoint for app settings and informations
