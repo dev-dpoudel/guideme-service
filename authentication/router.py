@@ -94,12 +94,15 @@ class UserViewModel(BasicViewSets):
 
         password = Authenticate.get_hash(password)
         user = UserIn(username=username, password=password)
-
         return self.create(user)
 
-    @user.put("/update")
+    @user.patch("/update")
     async def update_user(self, user: UserBase):
         return self.patch({"username": user.username}, user)
+
+    @user.delete("/{username}")
+    async def delete_user(self, username: str):
+        return self.delete({"username": username})
 
     @user.post("/update/password")
     async def update_password(self,
