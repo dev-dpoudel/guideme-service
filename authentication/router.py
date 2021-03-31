@@ -10,6 +10,11 @@ from fastapi.security import OAuth2PasswordRequestForm
 # from fastapi_utils.cbv import cbv
 from dependencies.cbv import cbv
 # import custom dependencies
+from dependencies.exceptions import ModelException
+from dependencies.filters import app_filter, FilterModel
+from dependencies.sorting import app_ordering, SortingModel
+from dependencies.pagination import PageModel, pagination
+# Additional Settings
 from config.config import get_settings
 from .oauthprovider import Authenticate
 # import custom serializers
@@ -18,10 +23,6 @@ from .models import User
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
-from dependencies.exceptions import ModelException
-from dependencies.filters import app_filter, FilterModel
-from dependencies.sorting import app_ordering, SortingModel
-
 
 # Instantiate a API Router for user authentication
 user = APIRouter(prefix="/user",
@@ -70,14 +71,16 @@ class UserViewModel(BasicViewSets):
     @user.post("/list", response_model=List[UserOut])
     async def list_user(self,
                         filters: FilterModel = Depends(app_filter),
-                        order_by: SortingModel = Depends(app_ordering)
+                        order_by: SortingModel = Depends(app_ordering),
+                        page: PageModel = Depends(pagination)
                         ):
 
-        self.SelectRelated = True
         # Set Filter and Sort Parameters
         self.Filter = filters
         self.Ordering = order_by if order_by else ['+username']
-
+        self.SelectRelated = True
+        self.limit = page.limit
+        self.skip = page.skip
         return self.list()
 
     @user.get("/{username}", response_model=UserOut)

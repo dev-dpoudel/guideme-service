@@ -2,19 +2,23 @@
 from typing import List
 # import fastapi components
 from fastapi import APIRouter
-from fastapi import Depends # noqa E501
+from fastapi import Depends  # noqa E501
 # import fastapi utils for class based views
 # from fastapi_utils.cbv import cbv
 from dependencies.cbv import cbv
 # import custom dependencies
-from authentication.oauthprovider import Authenticate # noqa E501
+from dependencies.exceptions import ModelException  # noqa E501
+from dependencies.filters import app_filter, FilterModel
+from dependencies.sorting import app_ordering, SortingModel
+from dependencies.pagination import PageModel, pagination
+# Additioanl dependencies
+from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
 from authentication.serializers import GroupBase, ScopeBase
 from authentication.models import Group, Scope
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
-from dependencies.exceptions import ModelException # noqa E501
 
 
 # Instantiate a API Router for user authentication
@@ -33,10 +37,18 @@ class GroupViewModel(BasicViewSets):
 
     Model = Group
     Output = GroupBase
-    Ordering = ['+name']
 
-    @permission.get("/groups", response_model=List[GroupBase])
-    async def list_groups(self):
+    @permission.post("/groups", response_model=List[GroupBase])
+    async def list_groups(self,
+                          filters: FilterModel = Depends(app_filter),
+                          order_by: SortingModel = Depends(app_ordering),
+                          page: PageModel = Depends(pagination)
+                          ):
+        self.Filter = filters
+        self.Ordering = order_by if order_by else ['+name']
+        self.SelectRelated = True
+        self.limit = page.limit
+        self.skip = page.skip
         return self.list()
 
     @permission.get("/group/{group_name}", response_model=GroupBase)
@@ -47,7 +59,7 @@ class GroupViewModel(BasicViewSets):
     async def create_group(self, group: GroupBase):
         return self.create(group)
 
-    @permission.post("/group/patch")
+    @permission.put("/group/patch")
     async def patch_group(self, group: GroupBase):
         return self.patch({"name": group.name}, group)
 
@@ -64,10 +76,18 @@ class ScopeViewModel(BasicViewSets):
 
     Model = Scope
     Output = ScopeBase
-    Ordering = ['+name']
 
-    @permission.get("/scopes", response_model=List[ScopeBase])
-    async def list_scopes(self):
+    @permission.post("/scopes", response_model=List[ScopeBase])
+    async def list_scopes(self,
+                          filters: FilterModel = Depends(app_filter),
+                          order_by: SortingModel = Depends(app_ordering),
+                          page: PageModel = Depends(pagination)
+                          ):
+        self.Filter = filters
+        self.Ordering = order_by if order_by else ['+name']
+        self.SelectRelated = True
+        self.limit = page.limit
+        self.skip = page.skip
         return self.list()
 
     @permission.get("/scope/{scope_name}", response_model=ScopeBase)
@@ -78,7 +98,7 @@ class ScopeViewModel(BasicViewSets):
     async def create_group(self, scope: ScopeBase):
         return self.create(scope)
 
-    @permission.post("/scope/patch")
+    @permission.put("/scope/patch")
     async def patch_group(self, scope: ScopeBase):
         return self.patch({"name": scope.name}, scope)
 
