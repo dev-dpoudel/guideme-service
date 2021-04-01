@@ -142,11 +142,6 @@ class User(Document):
         help_text="User Email Address"
     )
     # Registered Date
-    created_date = Field.DateTimeField(
-        db_field="created_date",
-        help_text="User Created Date",
-        default=datetime.utcnow()
-    )
     modified_date = Field.DateTimeField(
         db_field="modified_date",
         help_text="Last Modification Date",

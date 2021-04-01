@@ -112,9 +112,6 @@ class UserOut(BaseOut, UserBase):
     group: List[GroupBase] = Field(None,
                                    description="User Group"
                                    )
-    created_date: datetime = Field(None,
-                                   description="Created Date",
-                                   )
     modified_date: datetime = Field(None,
                                     description="Modified Date",
                                     )
