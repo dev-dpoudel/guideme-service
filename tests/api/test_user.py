@@ -16,47 +16,53 @@ class TestUserClass(unittest.TestCase):
     def setUp(self):
         self.baseurl = "http://localhost:8000/user/{}"
 
-    def test_2_get_user(self):
-        username = "invaliduser"
-        url = self.baseurl.format(username)
-        response = requests.get(url)
-        data = response.json()
-        self.assertEquals(response.status_code, 200, response.text)
-        self.assertEquals(
-            response.headers["Content-Type"], "application/json", "Invalid Output")  # noqa E501
-        self.assertEquals(data["username"], username, "User Mismatch Error")
-
-    def test_8_no_user(self):
-        username = "invaliduser"
-        url = self.baseurl.format(username)
-        response = requests.get(url)
-        self.assertEquals(response.status_code, 404, response.text)
-
-    def test_3_list_users(self):
-        url = self.baseurl.format("list")
-        response = requests.post(url)
-        data = response.json()
-        self.assertEquals(response.status_code, 200, response.text)
-        self.assertGreaterEqual(len(data), 1, "No user returned")
-
     def test_1_create_users(self):
         payload = {"username": "invaliduser", "password": "invalidpass"}
         url = self.baseurl.format("create")
         response = requests.post(url, data=payload)
         self.assertEquals(response.status_code, 200, response.text)
 
-    def test_4_update_users(self):
-        data = {"username": "invaliduser", "first_name": "Invalid", "last_name":"User", "isActive": "False"}  # noqa E501
+    def test_2_get_user(self):
+        username = "invaliduser"
+        url = self.baseurl.format(username)
+        response = requests.get(url)
+        data = response.json()
+        self.assertEquals(response.status_code, 200, response.text)
+        self.assertEquals(data["username"], username, "User Mismatch Error")
+
+    def test_3_list_users(self):
+        url = self.baseurl.format("")
+        response = requests.post(url)
+        data = response.json()
+        self.assertEquals(response.status_code, 200, response.text)
+        self.assertGreaterEqual(len(data), 1, "No user returned")
+
+    def test_40_update_users(self):
+        data = {"username": "invaliduser", "first_name": "Invalid", "last_name":"User", "is_active": "False"}  # noqa E501
         payload = json.dumps(data)
         url = self.baseurl.format("update")
         response = requests.patch(url, data=payload)
         data = response.json()
         self.assertEquals(response.status_code, 200, response.text)
 
-    def test_7_delete_users(self):
-        url = self.baseurl.format("invaliduser")
-        response = requests.delete(url)
-        self.assertEquals(response.status_code, 200, response.text)
+
+    # def test_41_set_users(self):
+    #     group = {"groups": ["users", "groups"]}
+    #     payload = json.dumps(group)
+    #     url = self.baseurl.format("invaliduser/group/add")
+    #     response = requests.patch(url, data=payload)
+    #     data = response.json()
+    #     self.assertEquals(response.status_code, 200, response.text)
+    #     self.assertEquals(data["group"], group, response.text)
+
+    # def test_42_unset_users(self):
+    #     group = {"groups": ["users", "groups"]}
+    #     payload = json.dumps(group)
+    #     url = self.baseurl.format("invaliduser/group/remove")
+    #     response = requests.patch(url, data=payload)
+    #     data = response.json()
+    #     self.assertEquals(response.status_code, 200, response.text)
+    #     self.assertEquals(data["group"], None, response.text)
 
     def test_5_filter_users(self):
 
@@ -68,7 +74,7 @@ class TestUserClass(unittest.TestCase):
             }
 
         # Set URL Parameters
-        url = self.baseurl.format("list")
+        url = self.baseurl.format("")
         response = requests.post(url, data=json.dumps(data))
         data = response.json()
         self.assertEquals(response.status_code, 200, response.text)
@@ -86,7 +92,7 @@ class TestUserClass(unittest.TestCase):
             ]
             }
 
-        url = self.baseurl.format("list")
+        url = self.baseurl.format("")
         response = requests.post(url)
         data = response.json()
         self.assertEquals(response.status_code, 200, "Server response error")
@@ -95,6 +101,18 @@ class TestUserClass(unittest.TestCase):
         if len(data) >= 1:
             user = data[0]
             self.assertIn(user['username'], ['alfaaz', 'invaliduser'], "User not in Requests")  # noqa E501
+
+    def test_7_delete_users(self):
+        url = self.baseurl.format("invaliduser")
+        response = requests.delete(url)
+        self.assertEquals(response.status_code, 200, response.text)
+
+
+    def test_8_no_user(self):
+        username = "invaliduser"
+        url = self.baseurl.format(username)
+        response = requests.get(url)
+        self.assertEquals(response.status_code, 404, response.text)
 
     def tearDown(self):
         del self.baseurl
@@ -105,7 +123,9 @@ def suite():
     suite.addTest(TestUserClass('test_1_create_users'))
     suite.addTest(TestUserClass('test_2_list_users'))
     suite.addTest(TestUserClass('test_3_get_user'))
-    suite.addTest(TestUserClass('test_4_update_users'))
+    suite.addTest(TestUserClass('test_40_update_users'))
+    # suite.addTest(TestUserClass('test_41_set_group'))
+    # suite.addTest(TestUserClass('test_42_unset_group'))
     suite.addTest(TestUserClass('test_5_filter_users'))
     suite.addTest(TestUserClass('test_6_query_users'))
     suite.addTest(TestUserClass('test_7_delete_users'))

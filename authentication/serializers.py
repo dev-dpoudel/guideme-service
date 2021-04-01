@@ -1,10 +1,11 @@
 from typing import List
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
+from mixin.baseOutput import BaseOut
 
 
 # Model for User Scope
-class ScopeBase(BaseModel):
+class ScopeBase(BaseOut):
     menu: str = Field(...,
                       description="Scope Name",
                       max_length=20,
@@ -16,7 +17,7 @@ class ScopeBase(BaseModel):
 
 
 # Model for User Group
-class GroupBase(BaseModel):
+class GroupBase(BaseOut):
     name: str = Field(...,
                       description="Group Name",
                       max_length=20
@@ -72,7 +73,7 @@ class UserBase(BaseModel):
                                    )
     is_active: bool = Field(True,
                             description="Is User Active",
-                            alias="isActive"
+                            alias="is_active"
                             )
     email_address: EmailStr = Field(None,
                                     description="Email Address",
@@ -107,7 +108,7 @@ class UserIn(UserBase):
 
 
 # User class for read-operation. Multiple records are fetched
-class UserOut(UserBase):
+class UserOut(BaseOut, UserBase):
     group: List[GroupBase] = Field(None,
                                    description="User Group"
                                    )
