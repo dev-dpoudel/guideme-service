@@ -212,12 +212,28 @@ class DeleteMultipleViewModel(BaseViewModel):
         return {"status_code": 200, "message": "delete sucessfully"}
 
 
+class AtomicUpdateViewModel(BaseViewModel):
+    ''' Atomic update selected instance.
+        All in-bound filters must be valid filter class.
+     '''
+
+    def atomic_update(self, Kwargs: dict, data: dict):
+        try:
+            instance = self.Model.objects(**Kwargs).update(**data)
+        except self.Model.DoesNotExist:
+            raise self.not_found(self.Model)
+
+        return self.Output(**instance._data)
+
+
 # Declare ViewSets that inherit all REST operation
 class BasicViewSets(GetViewModel,
                     CreateViewModel,
                     ListViewModel,
                     PatchViewModel,
-                    DeleteViewModel):
+                    DeleteViewModel,
+                    AtomicUpdateViewModel
+                    ):
     ''' Class provides basic REST operation.
     -get : Get Item based on input parameters.
     -list: Optional Filter Arguments

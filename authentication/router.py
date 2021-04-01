@@ -68,7 +68,7 @@ class UserViewModel(BasicViewSets):
     Model = User
     Output = UserOut
 
-    @user.post("/list", response_model=List[UserOut])
+    @user.post("/", response_model=List[UserOut])
     async def list_user(self,
                         filters: FilterModel = Depends(app_filter),
                         order_by: SortingModel = Depends(app_ordering),
@@ -83,7 +83,8 @@ class UserViewModel(BasicViewSets):
         self.skip = page.skip
         return self.list()
 
-    @user.get("/{username}", response_model=UserOut)
+    @user.get("/{username}")
+    # @user.get("/{username}", response_model=UserOut)
     async def get_user(self, username: str):
         return self.get({"username": username})
 
@@ -104,7 +105,7 @@ class UserViewModel(BasicViewSets):
     async def delete_user(self, username: str):
         return self.delete({"username": username})
 
-    @user.post("/update/password")
+    @user.post("/password")
     async def update_password(self,
                               username: str = Form(...),
                               old_pass: str = Form(...),
@@ -121,3 +122,15 @@ class UserViewModel(BasicViewSets):
             raise self.not_found("User")
 
         return {"status": 200, "detial": "Success"}
+
+    @user.patch("/{username}/group/add")
+    async def add_group(self, username: str, groups: List[str] = Form(...)):
+        return self.atomic_update({"username": username},
+                                  {"push_all__group": groups}
+                                  )
+
+    @user.patch("/{username}/group/remove")
+    async def remove_group(self, username: str, groups: List[str] = Form(...)):
+        return self.atomic_update({"username": username},
+                                  {"pull_all__group": groups}
+                                  )
