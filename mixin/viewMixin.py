@@ -71,12 +71,12 @@ class BaseViewModel(ModelException):
             except AttributeError:
                 raise self.invalid_parameter('exclude')
 
-        queryset = queryset.skip(self.skip).limit(self.limit)
+            queryset = queryset.skip(self.skip).limit(self.limit)
 
-        if self.SelectRelated:
-            queryset = queryset.select_related()
+            if self.SelectRelated:
+                queryset = queryset.select_related()
 
-        return queryset
+            return queryset
 
     def reset_queryset(self) -> bool:
         ''' Reset QuerySet Objects'''
@@ -86,7 +86,7 @@ class BaseViewModel(ModelException):
         self.Ordering = None
         self.limit = 0
         self.skip = 0
-        self.SelectRelated = None
+        self.SelectRelated = False
         return True
 
 
