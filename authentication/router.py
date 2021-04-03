@@ -67,6 +67,7 @@ class UserViewModel(BasicViewSets):
 
     Model = User
     Output = UserOut
+    Input = UserBase
 
     @user.post("/", response_model=List[UserOut])
     async def list_user(self,
@@ -84,7 +85,11 @@ class UserViewModel(BasicViewSets):
 
     @user.get("/{username}")
     async def get_user(self, username: str):
-        instance = self.Model.objects.get(username=username)
+        try:
+            instance = self.Model.objects.get(username=username)
+        except self.Model.DoesNotExist:
+            raise ModelException.not_found(self.Model)
+        # Get Added group and permission level
         groups, permission = instance.scopes
         return self.Output(**instance._data,
                            groups=groups,

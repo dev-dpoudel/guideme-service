@@ -18,6 +18,7 @@ class BaseViewModel(ModelException):
         skip: No of records to skip
     '''
     Model = None
+    Input = None
     Output = None
     Filter = None
     Ordering = None
@@ -71,12 +72,12 @@ class BaseViewModel(ModelException):
             except AttributeError:
                 raise self.invalid_parameter('exclude')
 
-            queryset = queryset.skip(self.skip).limit(self.limit)
+        queryset = queryset.skip(self.skip).limit(self.limit)
 
-            if self.SelectRelated:
-                queryset = queryset.select_related()
+        if self.SelectRelated:
+            queryset = queryset.select_related()
 
-            return queryset
+        return queryset
 
     def reset_queryset(self) -> bool:
         ''' Reset QuerySet Objects'''
@@ -164,7 +165,7 @@ class PatchViewModel(BaseViewModel):
     def patch(self, Kwargs: dict, inward_data: BaseModel):
         try:
             instance = self.queryset().get(**Kwargs)
-            instance_model = self.Output(**instance._data)
+            instance_model = self.Input(**instance._data)
             patch_data = inward_data.dict(exclude_unset=True)
             patched_instance = instance_model.copy(update=patch_data)
             instance.update(**patched_instance.dict())

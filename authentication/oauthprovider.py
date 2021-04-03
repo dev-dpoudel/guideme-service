@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Optional, List
+from typing import Optional
 # import fastapi libraries
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -25,9 +25,6 @@ class Authenticate:
     # Declare BcryptContext
     bcrypt = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-    # Scope for User
-    scopes: List[str] = []
-
     # Declare credential exception
     InvalidCredentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -46,6 +43,9 @@ class Authenticate:
     )
 
     def __init__(self, **kwargs):
+
+        self._scopes = {}
+        self._groups = None
 
         if kwargs:
             self.SECRET_KEY = kwargs["secret_key"]
@@ -85,7 +85,7 @@ class Authenticate:
         # Get Session Data
         session = Token(access_token=encoded_jwt,
                         token_type="bearer",
-                        scopes=self.scopes
+                        scopes=self._scopes
                         )
         return session
 
@@ -96,6 +96,10 @@ class Authenticate:
         except User.DoesNotExist:
             return self.InvalidCredentials_exception
 
+        # Set Scope for current user
+        groups, scope = instance.scopes
+        self._scopes.update(scope)
+        self._groups = groups
         # Get Pydantic model from the output
         user = UserIn(**instance._data)
         return user
