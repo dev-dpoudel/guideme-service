@@ -78,15 +78,17 @@ class UserViewModel(BasicViewSets):
         # Set Filter and Sort Parameters
         self.Filter = filters
         self.Ordering = order_by if order_by else ['+username']
-        self.SelectRelated = True
         self.limit = page.limit
         self.skip = page.skip
         return self.list()
 
     @user.get("/{username}")
-    # @user.get("/{username}", response_model=UserOut)
     async def get_user(self, username: str):
-        return self.get({"username": username})
+        instance = self.Model.objects.get(username=username)
+        groups, permission = instance.scopes
+        return self.Output(**instance._data,
+                           groups=groups,
+                           permission=permission)
 
     @user.post("/create")
     async def create_user(self,

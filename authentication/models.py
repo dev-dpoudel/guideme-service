@@ -5,29 +5,6 @@ from datetime import datetime
 
 
 # User document for permission informations
-class Scope(Document):
-    ''' Defines user level security clearance '''
-    # Name of the menu to work on e.g. dashboard
-    menu = Field.StringField(
-        help_text="Available Action Type",
-        max_length=20,
-        unique=True,
-    )
-    # Permission type : space seperated (read/write/update/delete)
-    permission = Field.ListField(
-        Field.StringField(max_length=50),
-        help_text="Permission Enabled : Space Seperated List",
-        default=list,
-    )
-    # Modified date
-    modified_date = Field.DateTimeField(
-        help_text="Modification Date Time",
-        default=datetime.utcnow()
-    )
-    meta = {'collection': 'menu'}
-
-
-# User document for permission informations
 class Group(Document):
     ''' Defines User Group for Operations'''
     # Name of the group
@@ -36,11 +13,9 @@ class Group(Document):
         unique=True,
         max_length=20
     )
-    # Menu Assigned to each group
-    menu = Field.ListField(
-        Field.LazyReferenceField('Scope', reverse_delete_rule=PULL),
-        help_text="Associated Menu",
-        default=list,
+    # permissions Assigned to each group
+    permission = Field.DictField(
+        help_text="Associated Permission",
         null=True
     )
     # Modified date
@@ -77,8 +52,7 @@ class User(Document):
     group = Field.ListField(
         Field.LazyReferenceField('Group', reverse_delete_rule=PULL),
         help_text="Assigned User Groups",
-        default=list,
-        null=True
+        null=False
     )
 
     # Username for the user
@@ -147,5 +121,15 @@ class User(Document):
         help_text="Last Modification Date",
         default=datetime.utcnow()
     )
+
+    @property
+    def scopes(self):
+        scopes = {}
+        groups = []
+        for group in self.group:
+            instance = group.fetch()
+            groups.append(instance.name)
+            scopes.update(instance.permission.items())
+        return groups, scopes
 
     meta = {'collection': 'users'}

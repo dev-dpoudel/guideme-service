@@ -1,30 +1,31 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 from mixin.baseOutput import BaseOut
 
 
-# Model for User Scope
-class ScopeBase(BaseOut):
-    menu: str = Field(...,
-                      description="Scope Name",
-                      max_length=20,
-                      )
-    permission: str = Field(...,
-                            description="Permission Type",
-                            max_length=50
-                            )
-
-
 # Model for User Group
-class GroupBase(BaseOut):
+class GroupBase(BaseModel):
     name: str = Field(...,
                       description="Group Name",
                       max_length=20
                       )
-    menu: List[ScopeBase] = Field(None,
-                                  description="Scope List"
-                                  )
+    permission: dict = Field(None,
+                             description="Scope Dictionary"
+                             )
+
+    # Configuration Examples
+    class Config:
+        schema_extra = {
+            "example": {
+                "name": "Admin",
+                "permission": {"user": "list get patch"}
+            }
+        }
+
+
+class GroupOut(BaseOut, GroupBase):
+    pass
 
 
 # Model for User Authentication
@@ -87,14 +88,14 @@ class UserBase(BaseModel):
                 "first_name": "Dinesh",
                 "last_name": "Poudel",
                 "prefered_name": "Alfaaz Ryon",
-                "birth_Date": "1995-01-20",
+                "birth_date": "1995-01-20T00:00:00",
                 "country": "Nepal",
                 "city": "kathmandu",
                 "zip": "44600",
                 "address": "Dhapasi-6,Tokha-6,kathmandu,Nepal",
                 "permanent_address": "Dhapasi-6,Tokha-6,Kathmandu,Nepal",
-                "email_address": "",
-                "is_active": ""
+                "email_address": "testemail@gmail.com",
+                "is_active": "True"
             }
         }
 
@@ -109,9 +110,12 @@ class UserIn(UserBase):
 
 # User class for read-operation. Multiple records are fetched
 class UserOut(BaseOut, UserBase):
-    group: List[GroupBase] = Field(None,
-                                   description="User Group"
-                                   )
+    groups: List[str] = Field(None,
+                              description="List og assigned groups to user")
+
+    permission: dict = Field(None,
+                             description="List of user level permissions")
+
     modified_date: datetime = Field(None,
                                     description="Modified Date",
                                     )
@@ -121,4 +125,4 @@ class UserOut(BaseOut, UserBase):
 class Token(BaseModel):
     access_token: str
     token_type: str
-    scopes: List[ScopeBase] = []
+    scopes: dict

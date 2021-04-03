@@ -14,8 +14,8 @@ from dependencies.pagination import PageModel, pagination
 # Additioanl dependencies
 from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
-from authentication.serializers import GroupBase, ScopeBase
-from authentication.models import Group, Scope
+from authentication.serializers import GroupBase, GroupOut
+from authentication.models import Group
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
@@ -36,9 +36,9 @@ class GroupViewModel(BasicViewSets):
     '''
 
     Model = Group
-    Output = GroupBase
+    Output = GroupOut
 
-    @permission.post("/groups", response_model=List[GroupBase])
+    @permission.post("/groups", response_model=List[GroupOut])
     async def list_groups(self,
                           filters: FilterModel = Depends(app_filter),
                           order_by: SortingModel = Depends(app_ordering),
@@ -46,12 +46,11 @@ class GroupViewModel(BasicViewSets):
                           ):
         self.Filter = filters
         self.Ordering = order_by if order_by else ['+name']
-        self.SelectRelated = True
         self.limit = page.limit
         self.skip = page.skip
         return self.list()
 
-    @permission.get("/group/{group_name}", response_model=GroupBase)
+    @permission.get("/group/{group_name}")
     async def get_group(self, group_name: str):
         return self.get({"name": group_name})
 
@@ -67,41 +66,6 @@ class GroupViewModel(BasicViewSets):
     async def update_group(self, group: GroupBase):
         return self.put({"name": group.name}, group)
 
-
-@cbv(permission)
-class ScopeViewModel(BasicViewSets):
-    '''
-    Declaration for Class Based views for Scope
-    '''
-
-    Model = Scope
-    Output = ScopeBase
-
-    @permission.post("/scopes", response_model=List[ScopeBase])
-    async def list_scopes(self,
-                          filters: FilterModel = Depends(app_filter),
-                          order_by: SortingModel = Depends(app_ordering),
-                          page: PageModel = Depends(pagination)
-                          ):
-        self.Filter = filters
-        self.Ordering = order_by if order_by else ['+name']
-        self.SelectRelated = True
-        self.limit = page.limit
-        self.skip = page.skip
-        return self.list()
-
-    @permission.get("/scope/{scope_name}", response_model=ScopeBase)
-    async def get_group(self, scope_name: str):
-        return self.get({"name": scope_name})
-
-    @permission.post("/scope/create")
-    async def create_group(self, scope: ScopeBase):
-        return self.create(scope)
-
-    @permission.put("/scope/patch")
-    async def patch_group(self, scope: ScopeBase):
-        return self.patch({"name": scope.name}, scope)
-
-    @permission.post("/scope/update")
-    async def update_group(self, scope: ScopeBase):
-        return self.put({"name": scope.name}, scope)
+    @permission.delete("/group/delete")
+    async def delete_group(self, group: GroupBase):
+        return self.delete({"name": group.name})
