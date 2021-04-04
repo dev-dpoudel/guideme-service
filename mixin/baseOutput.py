@@ -1,4 +1,4 @@
-from typing import Optional, Any  # noqa
+from typing import List, Optional, Any  # noqa
 from pydantic import BaseModel, Field  # noqa
 from bson import ObjectId
 

@@ -1,47 +1,41 @@
-from mongoengine import DynamicDocument
+from mixin.baseDocument import TagsDocument
 from mongoengine import fields as Field
 
 
-# User document for Product informations.
-# Dynamic Document is used to store incomming relevant details if any
-class Place(DynamicDocument):
-    ''' Product Description
+# Place document for Place informations.
+class Place(TagsDocument):
+    ''' Place Description
         Additional Details:
-            Manufacture and Expiry Date
-            Tags
-            Related products
-            Supplied By, Manufacturer
-            Ships From and Shipping Costs
+            Tags    : Store Tags for place
+            Ratings : Store User Ratings
     '''
-    # Unique Id for the current Item
-    product_Id = Field.SequenceField(
-        db_field="Id",
-        help_text="Product Id",
+    # Name for the Place
+    name = Field.StringField(
+        help_text="Place Name",
         required=True,
-        primary_key=True
+        max_length=50
     )
-    # Name for the current Item
-    product_name = Field.StringField(
-        db_field="name",
-        help_text="Product Name",
-        required=True,
+    # Type for the current Place
+    category = Field.StringField(
+        help_text="Place Type : Natural / Dine in / Hisotircal etc",
         max_length=50
     )
     # Type for the current Item
-    product_type = Field.StringField(
-        db_field="type",
-        help_text="Product Type : Food / Decoration / Colors etc",
-        null=True,
+    country = Field.StringField(
+        help_text="Country",
         max_length=50
     )
-    # Product Description
-    product_desc = Field.StringField(
-        db_field="description",
-        help_text="Product Description",
-        max_length="2000"
+    # Type for the current Item
+    city = Field.StringField(
+        help_text="City",
+        max_length=50
     )
-    # Listed Price
-    price = Field.DecimalField(
-        help_text="Per Unit Price",
-        default=0.00
+
+    location = Field.GeoPointField(
+        help_text="Latitude and Logitude of place"
+    )
+    # Place Description
+    description = Field.StringField(
+        help_text="Description for place",
+        max_length="2000"
     )

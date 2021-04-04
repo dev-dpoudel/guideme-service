@@ -1,32 +1,27 @@
-from pydantic import BaseModel, Field
+from typing import Optional, List
+from datetime import datetime
+from pydantic import BaseModel
+from mixin.baseOutput import BaseOut
 
 
 # Class Declaration for Products
 class ProductBase(BaseModel):
-    product_Id: str = Field(
-        ...,
-        description="Product Id",
-        alias="productId"
-    )
-    product_name: str = Field(
-        ...,
-        description="Product Name",
-        alias="name"
-    )
-    product_type: str = Field(
-        ...,
-        description="Product Type",
-        max_length=50,
-        alias="type"
-    )
-    product_description: str = Field(
-        ...,
-        description="Product Description",
-        max_length=50,
-        alias="description"
-    )
-    price: float = Field(
-        ...,
-        description="Unit Price",
-        gt=0
-    )
+    name: str
+    identity: Optional[str]
+    type: Optional[str]
+    description: Optional[str]
+    price: Optional[float]
+    available: bool
+    manufacture_date: Optional[datetime]
+    expiry_date: Optional[datetime]
+    tags: Optional[List[str]]
+
+
+# Class Declaration for Input Serializers
+class ProductIn(ProductBase):
+    pass
+
+
+# Class Declaration for Ouput Serializers
+class ProductOut(ProductBase, BaseOut):
+    pass
