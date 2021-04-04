@@ -2,55 +2,60 @@
 from typing import List
 # import fastapi components
 from fastapi import APIRouter
-from fastapi import Depends # noqa E501
+from fastapi import Depends  # noqa E501
 # import fastapi utils for class based views
 # from fastapi_utils.cbv import cbv
 from dependencies.cbv import cbv
 # import custom dependencies
-from authentication.oauthprovider import Authenticate # noqa E501
+from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
-from authentication.serializers import ItemBase
-from authentication.models import Item
+from .serializers import PlaceIn, PlaceOut
+from .models import Place
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
-from dependencies.exceptions import ModelException # noqa E501
+from dependencies.exceptions import ModelException  # noqa E501
 
 
 # Instantiate a API Router for user authentication
-permission = APIRouter(prefix="",
-                       tags=["items"],
-                       responses={404: {"description": "Not found"}
-                                  }
-                       )
+place = APIRouter(prefix="/place",
+                  tags=["places"],
+                  responses={404: {"description": "Not found"}
+                             }
+                  )
 
 
-@cbv(permission)
+@cbv(place)
 class ItemViewModel(BasicViewSets):
     '''
     Declaration for Class Based views for serializers Class
     '''
 
-    Model = Item
-    Output = ItemBase
-    Ordering = ['+product_Id']
+    Model = Place
+    Output = PlaceOut
+    Input = PlaceIn
+    Ordering = ['+name']
 
-    @permission.get("/items", response_model=List[ItemBase])
-    async def list_items(self):
+    @place.post("s", response_model=List[PlaceOut])
+    async def list_places(self):
         return self.list()
 
-    @permission.get("/item/{item_name}", response_model=ItemBase)
-    async def get_item(self, product_Id: str):
-        return self.get({"product_Id": product_Id})
+    @place.get("/{pk}")
+    async def get_place(self, pk: str):
+        return self.get({"pk": pk})
 
-    @permission.post("/item/create")
-    async def create_item(self, item: ItemBase):
-        return self.create(item)
+    @place.post("/")
+    async def create_place(self, place: PlaceIn):
+        return self.create(place)
 
-    @permission.post("/item/patch")
-    async def patch_item(self, item: ItemBase):
-        return self.patch({"product_Id": item.product_Id}, item)
+    @place.patch("/{pk}")
+    async def patch_place(self, pk: str, place: PlaceIn):
+        return self.patch({"pk": pk}, place)
 
-    @permission.post("/item/update")
-    async def update_item(self, item: ItemBase):
-        return self.put({"product_Id": item.product_Id}, item)
+    @place.put("/{pk}")
+    async def update_place(self, pk: str, place: PlaceIn):
+        return self.put({"pk": pk}, place)
+
+    @place.delete("/{pk}")
+    async def delete_place(self, pk: str):
+        return self.delete({"pk": pk})

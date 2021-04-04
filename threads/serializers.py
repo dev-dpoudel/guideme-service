@@ -1,6 +1,6 @@
 from typing import List, Optional, Any  # noqa
 from pydantic import BaseModel, Field  # noqa
-from mixin.BaseOut import BaseOut
+from mixin.baseOutput import BaseOut
 from datetime import datetime
 
 

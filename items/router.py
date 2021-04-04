@@ -9,7 +9,7 @@ from dependencies.cbv import cbv
 # import custom dependencies
 from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
-from .serializers import ProductBase
+from .serializers import ProductIn, ProductOut
 from .models import Product
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
@@ -18,7 +18,7 @@ from dependencies.exceptions import ModelException  # noqa E501
 
 
 # Instantiate a API Router for user authentication
-product = APIRouter(prefix="",
+product = APIRouter(prefix="/product",
                     tags=["products"],
                     responses={404: {"description": "Not found"}
                                }
@@ -32,25 +32,30 @@ class ItemViewModel(BasicViewSets):
     '''
 
     Model = Product
-    Output = ProductBase
-    Ordering = ['+product_Id']
+    Output = ProductOut
+    Input = ProductIn
+    Ordering = ['+name']
 
-    @product.get("/products", response_model=List[ProductBase])
+    @product.post("s", response_model=List[ProductOut])
     async def list_items(self):
         return self.list()
 
-    @product.get("/product/{product_Id}", response_model=ProductBase)
+    @product.get("/{product_id}", response_model=ProductOut)
     async def get_item(self, product_Id: str):
-        return self.get({"product_Id": product_Id})
+        return self.get({"pk": product_Id})
 
-    @product.post("/product/create")
-    async def create_item(self, item: ProductBase):
+    @product.post("/")
+    async def create_item(self, item: ProductOut):
         return self.create(item)
 
-    @product.post("/product/patch")
-    async def patch_item(self, item: ProductBase):
-        return self.patch({"product_Id": item.product_Id}, item)
+    @product.patch("/{product_id}")
+    async def patch_item(self, product_id: str, item: ProductIn):
+        return self.patch({"pk": product_id}, item)
 
-    @product.post("/product/update")
-    async def update_item(self, item: ProductBase):
-        return self.put({"product_Id": item.product_Id}, item)
+    @product.put("/{product_id}")
+    async def update_item(self, product_id: str, item: ProductIn):
+        return self.put({"pk": product_id}, item)
+
+    @product.delete("/{pk}")
+    async def delete_place(self, pk: str):
+        return self.delete({"pk": pk})
