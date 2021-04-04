@@ -7,6 +7,9 @@ from fastapi import Depends  # noqa E501
 # from fastapi_utils.cbv import cbv
 from dependencies.cbv import cbv
 # import custom dependencies
+from dependencies.filters import app_filter, FilterModel
+from dependencies.sorting import app_ordering, SortingModel
+from dependencies.pagination import PageModel, pagination
 from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
 from .serializers import PlaceIn, PlaceOut
@@ -37,7 +40,15 @@ class ItemViewModel(BasicViewSets):
     Ordering = ['+name']
 
     @place.post("s", response_model=List[PlaceOut])
-    async def list_places(self):
+    async def list_places(self,
+                          filters: FilterModel = Depends(app_filter),
+                          order_by: SortingModel = Depends(app_ordering),
+                          page: PageModel = Depends(pagination)
+                          ):
+        self.Filter = filters
+        self.Ordering = order_by if order_by else ['+name']
+        self.limit = page.limit
+        self.skip = page.skip
         return self.list()
 
     @place.get("/{pk}")

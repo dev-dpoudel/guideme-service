@@ -7,6 +7,9 @@ from fastapi import Depends  # noqa E501
 # from fastapi_utils.cbv import cbv
 from dependencies.cbv import cbv
 # import custom dependencies
+from dependencies.filters import app_filter, FilterModel
+from dependencies.sorting import app_ordering, SortingModel
+from dependencies.pagination import PageModel, pagination
 from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
 from .serializers import ProductIn, ProductOut
@@ -37,24 +40,32 @@ class ItemViewModel(BasicViewSets):
     Ordering = ['+name']
 
     @product.post("s", response_model=List[ProductOut])
-    async def list_items(self):
+    async def list_items(self,
+                         filters: FilterModel = Depends(app_filter),
+                         order_by: SortingModel = Depends(app_ordering),
+                         page: PageModel = Depends(pagination)
+                         ):
+        self.Filter = filters
+        self.Ordering = order_by if order_by else ['+name']
+        self.limit = page.limit
+        self.skip = page.skip
         return self.list()
 
-    @product.get("/{product_id}", response_model=ProductOut)
-    async def get_item(self, product_Id: str):
-        return self.get({"pk": product_Id})
+    @product.get("/{pk}", response_model=ProductOut)
+    async def get_item(self, pk: str):
+        return self.get({"pk": pk})
 
     @product.post("/")
     async def create_item(self, item: ProductOut):
         return self.create(item)
 
-    @product.patch("/{product_id}")
-    async def patch_item(self, product_id: str, item: ProductIn):
-        return self.patch({"pk": product_id}, item)
+    @product.patch("/{pk}")
+    async def patch_item(self, pk: str, item: ProductIn):
+        return self.patch({"pk": pk}, item)
 
-    @product.put("/{product_id}")
-    async def update_item(self, product_id: str, item: ProductIn):
-        return self.put({"pk": product_id}, item)
+    @product.put("/{pk}")
+    async def update_item(self, pk: str, item: ProductIn):
+        return self.put({"pk": pk}, item)
 
     @product.delete("/{pk}")
     async def delete_place(self, pk: str):
