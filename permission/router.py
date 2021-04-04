@@ -22,7 +22,7 @@ from mongoengine.queryset.visitor import Q  # noqa E501
 
 
 # Instantiate a API Router for user authentication
-permission = APIRouter(prefix="",
+permission = APIRouter(prefix="/group",
                        tags=["permissions"],
                        responses={404: {"description": "Not found"}
                                   }
@@ -37,8 +37,9 @@ class GroupViewModel(BasicViewSets):
 
     Model = Group
     Output = GroupOut
+    Input = GroupBase
 
-    @permission.post("/groups", response_model=List[GroupOut])
+    @permission.post("s", response_model=List[GroupOut])
     async def list_groups(self,
                           filters: FilterModel = Depends(app_filter),
                           order_by: SortingModel = Depends(app_ordering),
@@ -50,22 +51,22 @@ class GroupViewModel(BasicViewSets):
         self.skip = page.skip
         return self.list()
 
-    @permission.get("/group/{group_name}")
+    @permission.get("/{group_name}")
     async def get_group(self, group_name: str):
         return self.get({"name": group_name})
 
-    @permission.post("/group/create")
+    @permission.post("/")
     async def create_group(self, group: GroupBase):
         return self.create(group)
 
-    @permission.put("/group/patch")
+    @permission.patch("/")
     async def patch_group(self, group: GroupBase):
         return self.patch({"name": group.name}, group)
 
-    @permission.post("/group/update")
+    @permission.put("/")
     async def update_group(self, group: GroupBase):
         return self.put({"name": group.name}, group)
 
-    @permission.delete("/group/delete")
-    async def delete_group(self, group: GroupBase):
-        return self.delete({"name": group.name})
+    @permission.delete("/{name}")
+    async def delete_group(self, name: str):
+        return self.delete({"name": name})
