@@ -1,5 +1,6 @@
 from mongoengine import fields as Field
 from mixin.baseDocument import TagsDocument
+from authentication.models import User  # noqa E501
 
 
 # User document for Product informations.
@@ -55,4 +56,8 @@ class Product(TagsDocument):
     expiry_date = Field.DateTimeField(
         help_text="Expiry",
         null=False
+    )
+    owner = Field.ReferenceField(
+        'User',
+        help_text="User"
     )

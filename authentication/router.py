@@ -69,7 +69,7 @@ class UserViewModel(BasicViewSets):
     Output = UserOut
     Input = UserBase
 
-    @user.post("/", response_model=List[UserOut])
+    @user.post("/")
     async def list_user(self,
                         filters: FilterModel = Depends(app_filter),
                         order_by: SortingModel = Depends(app_ordering),

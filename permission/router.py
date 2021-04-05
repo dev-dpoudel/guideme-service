@@ -1,5 +1,3 @@
-# import common modules
-from typing import List
 # import fastapi components
 from fastapi import APIRouter
 from fastapi import Depends  # noqa E501
@@ -39,7 +37,7 @@ class GroupViewModel(BasicViewSets):
     Output = GroupOut
     Input = GroupBase
 
-    @permission.post("s", response_model=List[GroupOut])
+    @permission.post("s")
     async def list_groups(self,
                           filters: FilterModel = Depends(app_filter),
                           order_by: SortingModel = Depends(app_ordering),

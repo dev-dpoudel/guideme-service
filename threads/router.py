@@ -1,5 +1,3 @@
-# import common modules
-from typing import List
 # import fastapi components
 from fastapi import APIRouter
 from fastapi import Depends  # noqa E501
@@ -23,7 +21,7 @@ from dependencies.exceptions import ModelException  # noqa E501
 
 # Instantiate a API Router for user authentication
 threads = APIRouter(prefix="",
-                    tags=["products"],
+                    tags=["threads"],
                     responses={404: {"description": "Not found"}
                                }
                     )
@@ -39,7 +37,7 @@ class RatingsViewModel(BasicViewSets):
     Output = RatingsOut
     Input = RatingsIn
 
-    @threads.post("/ratings", response_model=List[RatingsOut])
+    @threads.post("/ratings")
     async def list_ratings(self,
                            filters: FilterModel = Depends(app_filter),
                            order_by: SortingModel = Depends(app_ordering),
@@ -82,7 +80,7 @@ class CommentsViewModel(BasicViewSets):
     Output = CommentsOut
     Input = CommentsIn
 
-    @threads.post("/comments", response_model=List[CommentsOut])
+    @threads.post("/comments")
     async def list_comments(self,
                             filters: FilterModel = Depends(app_filter),
                             order_by: SortingModel = Depends(app_ordering),

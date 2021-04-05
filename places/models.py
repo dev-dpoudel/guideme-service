@@ -1,5 +1,6 @@
 from mixin.baseDocument import TagsDocument
 from mongoengine import fields as Field
+from authentication.models import User  # noqa E501
 
 
 # Place document for Place informations.
@@ -38,4 +39,9 @@ class Place(TagsDocument):
     description = Field.StringField(
         help_text="Description for place",
         max_length="2000"
+    )
+    owner = Field.ReferenceField(
+        'User',
+        help_text="User",
+        required=True
     )

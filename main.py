@@ -82,13 +82,13 @@ def shutdown_event():
 
 
 # Declare Method with Dependency to use authentication scheme
-@app.get("/auth/")
+@app.get("/auth/", tags=['authentication'])
 async def read_items(user=Depends(get_active_user)):
     return {"User": user.username}
 
 
 # Declare Endpoint for app settings and informations
-@app.get("/info")
+@app.get("/info", tags=['information'])
 async def info(settings: AppSettings = Depends(get_settings)):
     return {
         "app_name": settings.app_name,

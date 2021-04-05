@@ -11,7 +11,7 @@ class ProductBase(BaseModel):
     type: Optional[str]
     description: Optional[str]
     price: Optional[float]
-    available: bool
+    available: Optional[bool]
     manufacture_date: Optional[datetime]
     expiry_date: Optional[datetime]
     tags: Optional[List[str]]

@@ -1,5 +1,5 @@
 from pymongo import errors
-from mongoengine.errors import InvalidQueryError, LookUpError
+from mongoengine.errors import InvalidQueryError, LookUpError, NotUniqueError
 from pydantic import BaseModel
 from dependencies.exceptions import ModelException
 
@@ -101,6 +101,8 @@ class CreateViewModel(BaseViewModel):
             instance.save()
         except errors.DuplicateKeyError:
             raise self.already_exist("Model with PrimaryKey")
+        except NotUniqueError:
+            raise self.already_exist("Model with UniqueKey")
         return self.Output(**instance._data)
 
 
@@ -130,7 +132,7 @@ class ListViewModel(BaseViewModel):
 
     def list(self):
         models = self.queryset()
-        model_data = [model._data for model in models]
+        model_data = [self.Output(**model._data) for model in models]
         return model_data
 
 

@@ -1,5 +1,3 @@
-# import common modules
-from typing import List
 # import fastapi components
 from fastapi import APIRouter
 from fastapi import Depends  # noqa E501
@@ -39,7 +37,7 @@ class ItemViewModel(BasicViewSets):
     Input = ProductIn
     Ordering = ['+name']
 
-    @product.post("s", response_model=List[ProductOut])
+    @product.post("s")
     async def list_items(self,
                          filters: FilterModel = Depends(app_filter),
                          order_by: SortingModel = Depends(app_ordering),
@@ -51,12 +49,12 @@ class ItemViewModel(BasicViewSets):
         self.skip = page.skip
         return self.list()
 
-    @product.get("/{pk}", response_model=ProductOut)
+    @product.get("/{pk}")
     async def get_item(self, pk: str):
         return self.get({"pk": pk})
 
     @product.post("/")
-    async def create_item(self, item: ProductOut):
+    async def create_item(self, item: ProductIn):
         return self.create(item)
 
     @product.patch("/{pk}")
