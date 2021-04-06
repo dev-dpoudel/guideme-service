@@ -10,10 +10,10 @@ from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
 from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
-from .serializers import ProductIn, ProductOut
+from .serializers import ProductIn, ProductOut, ProductUpdate
 from .models import Product
 # import ViewSets
-from mixin.viewMixin import BasicViewSets
+from mixin.viewMixin import BasicViewSets, UpdateViewModel
 from mongoengine.queryset.visitor import Q  # noqa E501
 from dependencies.exceptions import ModelException  # noqa E501
 
@@ -27,7 +27,7 @@ product = APIRouter(prefix="/product",
 
 
 @cbv(product)
-class ItemViewModel(BasicViewSets):
+class ItemViewModel(BasicViewSets, UpdateViewModel):
     '''
     Declaration for Class Based views for Item serializers Class
     '''
@@ -58,7 +58,8 @@ class ItemViewModel(BasicViewSets):
         return self.create(item)
 
     @product.patch("/{pk}")
-    async def patch_item(self, pk: str, item: ProductIn):
+    async def patch_item(self, pk: str, item: ProductUpdate):
+        self.Input = ProductUpdate
         return self.patch({"pk": pk}, item)
 
     @product.put("/{pk}")

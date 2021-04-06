@@ -97,7 +97,7 @@ class CreateViewModel(BaseViewModel):
 
     def create(self, data: BaseModel):
         try:
-            instance = self.Model(**data.dict())
+            instance = self.Model(**data.dict(exclude_unset=True))
             instance.save()
         except errors.DuplicateKeyError:
             raise self.already_exist("Model with PrimaryKey")
@@ -146,7 +146,7 @@ class UpdateViewModel(BaseViewModel):
     def put(self, Kwargs: dict, inward_data: BaseModel):
         try:
             instance = self.queryset().get(**Kwargs)
-            instance.update(**inward_data.dict())
+            instance.update(**inward_data.dict(exclude_unset=True))
         except errors.DuplicateKeyError:
             raise self.already_exist(self.Model)
         except self.Model.DoesNotExist:

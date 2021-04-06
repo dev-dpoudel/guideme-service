@@ -38,7 +38,7 @@ class Place(TagsDocument):
     # Place Description
     description = Field.StringField(
         help_text="Description for place",
-        max_length="2000"
+        max_length=2000
     )
     owner = Field.ReferenceField(
         'User',

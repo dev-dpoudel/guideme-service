@@ -27,8 +27,8 @@ class Product(TagsDocument):
         help_text="Product Id"
     )
     # Type for the current Item
-    type = Field.StringField(
-        db_field="type",
+    category = Field.StringField(
+        db_field="category",
         help_text="Product Type : Food / Decoration / Colors etc",
         max_length=50
     )
@@ -36,7 +36,7 @@ class Product(TagsDocument):
     description = Field.StringField(
         db_field="description",
         help_text="Product Description",
-        max_length="2000"
+        max_length=2000
     )
     # Listed Price
     price = Field.DecimalField(

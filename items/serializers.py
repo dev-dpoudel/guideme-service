@@ -8,7 +8,7 @@ from mixin.baseOutput import BaseOut
 class ProductBase(BaseModel):
     name: str
     identity: Optional[str]
-    type: Optional[str]
+    category: Optional[str]
     description: Optional[str]
     price: Optional[float]
     available: Optional[bool]
@@ -25,3 +25,7 @@ class ProductIn(ProductBase):
 # Class Declaration for Ouput Serializers
 class ProductOut(ProductBase, BaseOut):
     pass
+
+
+class ProductUpdate(ProductBase, BaseOut):
+    name: Optional[str]
