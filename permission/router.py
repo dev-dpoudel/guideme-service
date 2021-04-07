@@ -53,6 +53,10 @@ class GroupViewModel(BasicViewSets):
     async def get_group(self, group_name: str):
         return self.get({"name": group_name})
 
+    @permission.get("/id/{pk}")
+    async def get_group_by_Id(self, pk: str):
+        return self.get({"pk": pk})
+
     @permission.post("/")
     async def create_group(self, group: GroupBase):
         return self.create(group)

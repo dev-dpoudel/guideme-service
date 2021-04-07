@@ -1,16 +1,16 @@
-from mongoengine import Document
+from mongoengine import Document, CASCADE
 from mongoengine import fields as Field
-from authentication.models import User  # noqa E501
-from items.models import Product  # noqa E501
-from places.models import Place   # noqa E501
+from authentication.models import User
+from items.models import Product
+from places.models import Place
 from datetime import datetime
 
 
 # Ratings document for rating information
 class Ratings(Document):
-    thread = Field.GenericLazyReferenceField(
+    thread = Field.GenericReferenceField(
         help_text="Generic Reference to all the modules",
-        choices=['Place', 'Product']
+        required=True
     )
     rating = Field.DecimalField(
         help_text="User rating",
@@ -22,17 +22,18 @@ class Ratings(Document):
         required=True
     )
     user = Field.ReferenceField(
-        'User',
+        User,
         help_text="User",
-        required=True
+        reverse_delete_rule=CASCADE
     )
 
 
 # Ratings document for Comment information
 class Comments(Document):
-    thread = Field.GenericLazyReferenceField(
+    thread = Field.GenericReferenceField(
         help_text="Generic Reference to all the modules",
-        choices=['Place', 'Product']
+        required=True,
+        choices=[Place, Product]
     )
     comment = Field.StringField(
         help_text="User rating",
@@ -40,9 +41,9 @@ class Comments(Document):
         required=True
     )
     user = Field.ReferenceField(
-        'User',
+        User,
         help_text="User",
-        required=True
+        reverse_delete_rule=CASCADE
     )
     modified_date = Field.DateTimeField(
         help_text="Modified Date",

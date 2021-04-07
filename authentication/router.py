@@ -85,10 +85,7 @@ class UserViewModel(BasicViewSets):
 
     @user.get("/{username}")
     async def get_user(self, username: str):
-        try:
-            instance = self.Model.objects.get(username=username)
-        except self.Model.DoesNotExist:
-            raise ModelException.not_found(self.Model)
+        instance = self.get_instance({"username": username})
         # Get Added group and permission level
         groups, permission = instance.scopes
         return self.Output(**instance._data,
@@ -118,15 +115,13 @@ class UserViewModel(BasicViewSets):
                               old_pass: str = Form(...),
                               password: str = Form(...)
                               ):
-        try:
-            instance = User.objects.get(username=username)
-            if not Authenticate.validate_hash(old_pass, instance.password):
-                raise Authenticate.InvalidCredentials_exception
-            hash = Authenticate.get_hash(password)
-            # Atomic Update Password
-            instance.update(set__password=hash)
-        except User.DoesNotExist:
-            raise self.not_found("User")
+
+        instance = instance = self.get_instance({"username": username})
+        if not Authenticate.validate_hash(old_pass, instance.password):
+            raise Authenticate.InvalidCredentials_exception
+        hash = Authenticate.get_hash(password)
+        # Atomic Update Password
+        instance.update(set__password=hash)
 
         return {"status": 200, "detial": "Success"}
 

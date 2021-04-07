@@ -26,7 +26,7 @@ class ModelException:
     @staticmethod
     def multiple_instance_found(model: str):
         return HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
+            status_code=status.HTTP_409_CONFLICT,
             detail="multiple %s found" % (model)
         )
 
@@ -43,7 +43,7 @@ class ModelException:
     @staticmethod
     def invalid_parameter(param: str):
         return HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_417_EXPECTATION_FAILED,
             detail="Invalid %s parameter" % (param)
         )
 
@@ -51,7 +51,7 @@ class ModelException:
     @staticmethod
     def invalid_type(param: str):
         return HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_417_EXPECTATION_FAILED,
             detail="Type of %s parameter doesn't match" % (param)
         )
 
@@ -61,4 +61,11 @@ class ModelException:
         return HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Field %s doesn't exist on database" % (param)
+        )
+
+    @staticmethod
+    def validation_error(error: str):
+        return HTTPException(
+            status_code=status.HTTP_417_EXPECTATION_FAILED,
+            detail=error.errors()
         )

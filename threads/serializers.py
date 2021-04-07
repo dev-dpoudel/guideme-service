@@ -4,20 +4,30 @@ from mixin.baseOutput import BaseOut
 from datetime import datetime
 
 
+class Threads(BaseModel):
+    ''' Base model for thread definition'''
+    thread: Any
+
+
 class Ratings(BaseModel):
     ''' Base Model to provide common field'''
-    rating: Optional[float]
+    rating: float
     review: str
 
 
-class RatingsIn(Ratings):
+class RatingsIn(Ratings, Threads):
     ''' Provides Ouput Schema for Ratings'''
-    thread: str
+    pass
 
 
 class RatingsOut(Ratings, BaseOut):
     ''' Provides Ouput Schema for Ratings'''
-    user: str
+    user: Optional[str]
+
+
+class RatingsUpdate(Ratings):
+    ''' Provides Ouput Schema for Ratings'''
+    review: Optional[str]
 
 
 class Comments(BaseModel):
@@ -25,14 +35,19 @@ class Comments(BaseModel):
     comment: str
 
 
-class CommentsIn(Comments):
+class CommentsIn(Comments, Threads):
     ''' Provides Ouput Schema for Ratings'''
-    thread: str
+    pass
 
 
 class CommentsOut(Comments, BaseOut):
     ''' Base Model to provide Output schema for  Comments'''
-    user: str
+    user: Optional[str]
     modified_date: datetime = Field(None,
                                     description="Modified Date",
                                     )
+
+
+class CommentsUpdate(Comments):
+    ''' Comments Update Serializers '''
+    pass

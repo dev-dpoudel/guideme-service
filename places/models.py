@@ -24,12 +24,14 @@ class Place(TagsDocument):
     # Type for the current Item
     country = Field.StringField(
         help_text="Country",
-        max_length=50
+        max_length=50,
+        required=True
     )
     # Type for the current Item
     city = Field.StringField(
         help_text="City",
-        max_length=50
+        max_length=50,
+        required=True
     )
 
     location = Field.GeoPointField(
@@ -42,6 +44,5 @@ class Place(TagsDocument):
     )
     owner = Field.ReferenceField(
         'User',
-        help_text="User",
-        required=True
+        help_text="User"
     )

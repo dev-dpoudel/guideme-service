@@ -1,5 +1,4 @@
 from pymongo import errors
-from typing import List, Optional
 from mongoengine.errors import InvalidQueryError, LookUpError, NotUniqueError
 from pydantic import BaseModel
 from dependencies.exceptions import ModelException
@@ -107,7 +106,7 @@ class CreateViewModel(BaseViewModel):
 
     def create(self, data: BaseModel):
         try:
-            instance = self.Model(**data.dict())
+            instance = self.Model(**data.dict(exclude_unset=True))
             instance.save()
         except errors.DuplicateKeyError:
             raise self.already_exist("Model with PrimaryKey")
@@ -125,7 +124,13 @@ class GetViewModel(BaseViewModel):
     '''
 
     def get(self, Kwargs: dict):
+        # try:
+        # instance = self.queryset().get(Kwargs)
         instance = self.get_instance(Kwargs)
+        # except self.Model.DoesNotExist:
+        #     raise self.not_found(self.Model)
+        # except self.Model.MultipleObjectsReturned:
+        #     raise self.multiple_instance_found(self.Model)
         return self.Output(**instance._data)
 
 
@@ -151,11 +156,14 @@ class UpdateViewModel(BaseViewModel):
 
     def put(self, Kwargs: dict, inward_data: BaseModel):
         try:
-            instance = self.get_instance(Kwargs)
+            instance = self.queryset().get(**Kwargs)
             instance.update(**inward_data.dict(exclude_unset=True))
-            instance.reload()
         except errors.DuplicateKeyError:
             raise self.already_exist(self.Model)
+        except self.Model.DoesNotExist:
+            raise self.not_found(self.Model)
+        except self.Model.MultipleObjectsReturned:
+            raise self.multiple_instance_found(self.Model)
 
         return self.Output(**instance._data)
 
@@ -169,14 +177,17 @@ class PatchViewModel(BaseViewModel):
 
     def patch(self, Kwargs: dict, inward_data: BaseModel):
         try:
-            instance = self.get_instance(Kwargs)
+            instance = self.queryset().get(**Kwargs)
             instance_model = self.Input(**instance._data)
             patch_data = inward_data.dict(exclude_unset=True)
             patched_instance = instance_model.copy(update=patch_data)
             instance.update(**patched_instance.dict())
-            instance.reload()
         except errors.DuplicateKeyError:
             raise self.already_exist(self.Model)
+        except self.Model.DoesNotExist:
+            raise self.not_found(self.Model)
+        except self.Model.MultipleObjectsReturned:
+            raise self.multiple_instance_found(self.Model)
 
         return self.Output(**instance._data)
 
@@ -188,8 +199,13 @@ class DeleteViewModel(BaseViewModel):
      '''
 
     def delete(self, Kwargs: dict):
-        instance = self.get_instance(Kwargs)
-        instance.delete()
+        try:
+            instance = self.queryset().get(**Kwargs)
+            instance.delete()
+        except self.Model.MultipleObjectsReturned:
+            raise self.multiple_instance_found(self.Model)
+        except self.Model.DoesNotExist:
+            raise self.not_found(self.Model)
 
         return {"status_code": 200, "message": "delete sucessfully"}
 
@@ -216,14 +232,10 @@ class AtomicUpdateViewModel(BaseViewModel):
      '''
 
     def atomic_update(self, Kwargs: dict, data: dict):
-
-        # Get Instance for selected pk
-        instance = self.get_instance(Kwargs)
         try:
-            instance.update(**data)
-            instance.reload()
-        except errors.DuplicateKeyError:
-            raise self.already_exist(self.Model)
+            instance = self.Model.objects(**Kwargs).update(**data)
+        except self.Model.DoesNotExist:
+            raise self.not_found(self.Model)
 
         return self.Output(**instance._data)
 
@@ -242,20 +254,4 @@ class BasicViewSets(GetViewModel,
     -patch: Update non-empty fields in db based on input parameters
     -delete: Delete object instance based on input parameters
     '''
-    def add_raw_query(self, query: dict):
-        ''' Returns __raw__ query instance '''
-        # set raw query
-        query = {"__raw__": query}
-        if self.Filter:
-            query.update(self.Filter)
-        # Set Class Filters
-        self.Filter = query
-
-    def set_page(self, page: BaseModel):
-        ''' Set Page Information '''
-        self.limit = page.limit
-        self.skip = page.skip
-
-    def set_order(self, order: Optional[List[str]], alternate: List[str]):
-        ''' Set Ordering Information '''
-        self.Ordering = order if order else alternate
+    pass

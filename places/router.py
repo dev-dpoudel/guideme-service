@@ -10,7 +10,7 @@ from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
 from authentication.oauthprovider import Authenticate  # noqa E501
 # import custom serializers
-from .serializers import PlaceIn, PlaceOut
+from .serializers import PlaceIn, PlaceOut, PlaceUpdate
 from .models import Place
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
@@ -27,7 +27,7 @@ place = APIRouter(prefix="/place",
 
 
 @cbv(place)
-class ItemViewModel(BasicViewSets):
+class PlaceViewModel(BasicViewSets):
     '''
     Declaration for Class Based views for serializers Class
     '''
@@ -58,7 +58,8 @@ class ItemViewModel(BasicViewSets):
         return self.create(place)
 
     @place.patch("/{pk}")
-    async def patch_place(self, pk: str, place: PlaceIn):
+    async def patch_place(self, pk: str, place: PlaceUpdate):
+        self.Input = PlaceUpdate
         return self.patch({"pk": pk}, place)
 
     @place.put("/{pk}")
