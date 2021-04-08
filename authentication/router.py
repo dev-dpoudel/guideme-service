@@ -2,18 +2,8 @@
 from datetime import timedelta
 from typing import List
 # import fastapi components
-from fastapi import APIRouter
-from fastapi import Depends
-from fastapi import Form
+from fastapi import APIRouter, Depends, Form
 from fastapi.security import OAuth2PasswordRequestForm
-# import fastapi utils for class based views
-# from fastapi_utils.cbv import cbv
-from dependencies.cbv import cbv
-# import custom dependencies
-from dependencies.exceptions import ModelException
-from dependencies.filters import app_filter, FilterModel
-from dependencies.sorting import app_ordering, SortingModel
-from dependencies.pagination import PageModel, pagination
 # Additional Settings
 from config.config import get_settings
 from .oauthprovider import Authenticate, get_current_user, is_admin_user
@@ -23,6 +13,17 @@ from .models import User
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
+# import common dependencies
+from dependencies import (cbv,
+                          ModelException,
+                          app_filter,
+                          FilterModel,
+                          app_ordering,
+                          SortingModel,
+                          PageModel,
+                          pagination
+                          )
+
 
 # Instantiate a API Router for user authentication
 user = APIRouter(prefix="/user",
@@ -133,8 +134,10 @@ class UserViewModel(BasicViewSets):
                               ):
 
         instance = instance = self.get_instance({"username": user.username})
+
         if not Authenticate.validate_hash(old_pass, instance.password):
             raise Authenticate.InvalidCredentials_exception
+
         hash = Authenticate.get_hash(password)
         # Atomic Update Password
         instance.update(set__password=hash)

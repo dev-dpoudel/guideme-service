@@ -1,22 +1,21 @@
 # import fastapi components
-from fastapi import APIRouter
-from fastapi import Depends  # noqa E501
-# import fastapi utils for class based views
-# from fastapi_utils.cbv import cbv
-from dependencies.cbv import cbv
-# import custom dependencies
-from dependencies.filters import app_filter, FilterModel
-from dependencies.sorting import app_ordering, SortingModel
-from dependencies.pagination import PageModel, pagination
-from authentication.oauthprovider import get_active_user
+from fastapi import APIRouter, Depends
+from authentication import get_active_user
 # import custom serializers
 from .serializers import ProductIn, ProductOut, ProductUpdate
 from .models import Product
 # import ViewSets
 from mixin.viewMixin import BasicViewSets, UpdateViewModel, GetWithOwners
 from mongoengine.queryset.visitor import Q  # noqa E501
-from dependencies.exceptions import ModelException  # noqa E501
-
+# Import common dependencies
+from dependencies import (cbv,
+                          app_filter,
+                          FilterModel,
+                          app_ordering,
+                          SortingModel,
+                          PageModel,
+                          pagination
+                          )
 
 # Instantiate a API Router for user authentication
 product = APIRouter(prefix="/product",
@@ -50,7 +49,9 @@ class ItemViewModel(BasicViewSets, UpdateViewModel, GetWithOwners):
         return self.list()
 
     @product.get("/{pk}")
-    async def get_item(self, pk: str):
+    async def get_item(self,
+                       pk: str
+                       ):
         return self.get_detail({"pk": pk})
 
     @product.post("/")

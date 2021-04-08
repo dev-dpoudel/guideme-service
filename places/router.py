@@ -1,21 +1,21 @@
 # import fastapi components
 from fastapi import APIRouter
 from fastapi import Depends  # noqa E501
-# import fastapi utils for class based views
-# from fastapi_utils.cbv import cbv
-from dependencies.cbv import cbv
-# import custom dependencies
-from dependencies.filters import app_filter, FilterModel
-from dependencies.sorting import app_ordering, SortingModel
-from dependencies.pagination import PageModel, pagination
-from authentication.oauthprovider import get_active_user
 # import custom serializers
+from authentication import get_active_user
 from .serializers import PlaceIn, PlaceOut, PlaceUpdate
 from .models import Place
 # import ViewSets
 from mixin.viewMixin import BasicViewSets, GetWithOwners
 from mongoengine.queryset.visitor import Q  # noqa E501
-from dependencies.exceptions import ModelException  # noqa E501
+from dependencies import (cbv,
+                          app_filter,
+                          FilterModel,
+                          app_ordering,
+                          SortingModel,
+                          PageModel,
+                          pagination
+                          )
 
 
 # Instantiate a API Router for user authentication
@@ -50,7 +50,9 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
         return self.list()
 
     @place.get("/{pk}")
-    async def get_place(self, pk: str):
+    async def get_place(self,
+                        pk: str
+                        ):
         return self.get_detail({"pk": pk})
 
     @place.post("/")
@@ -79,5 +81,7 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
         return self.put({"pk": pk, "user": user.id}, place)
 
     @place.delete("/{pk}")
-    async def delete_place(self, pk: str, user=Depends(get_active_user)):
+    async def delete_place(self,
+                           pk: str,
+                           user=Depends(get_active_user)):
         return self.delete({"pk": pk, "user": user.id})

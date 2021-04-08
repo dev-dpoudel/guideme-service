@@ -1,16 +1,7 @@
 from pydantic import validate_arguments, BaseModel
 # import fastapi components
-from fastapi import APIRouter
-from fastapi import Depends  # noqa E501
-# import fastapi utils for class based views
-# from fastapi_utils.cbv import cbv
-from dependencies.cbv import cbv
-# import custom dependencies
-from dependencies.exceptions import ModelException
-from dependencies.filters import app_filter, FilterModel
-from dependencies.sorting import app_ordering, SortingModel
-from dependencies.pagination import PageModel, pagination
-from authentication.oauthprovider import get_active_user
+from fastapi import APIRouter, Depends
+from authentication import get_active_user
 # import custom serializers
 from .serializers import (RatingsOut,
                           RatingsIn,
@@ -23,11 +14,19 @@ from .models import Ratings, Comments
 # import ViewSets
 from mixin.viewMixin import BasicViewSets, ListWithOwners
 from mongoengine.queryset.visitor import Q  # noqa E501
-from dependencies.exceptions import ModelException  # noqa E501
 from places.router import PlaceViewModel
 from items.router import ItemViewModel
 from bson.objectid import ObjectId
-
+# Import common dependencies
+from dependencies import (cbv,
+                          app_filter,
+                          FilterModel,
+                          app_ordering,
+                          SortingModel,
+                          PageModel,
+                          pagination,
+                          ModelException
+                          )
 
 # Instantiate a API Router for user authentication
 threads = APIRouter(prefix="",
@@ -78,7 +77,9 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
         return self.list_detail()
 
     @threads.get("/rating/{pk}")
-    async def get_rating(self, pk: str):
+    async def get_rating(self,
+                         pk: str
+                         ):
         return self.get({"pk": pk})
 
     @threads.post("/{thread}/rating/")
@@ -110,7 +111,10 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
         return self.put({"pk": pk, "user": user.id}, rating)
 
     @threads.delete("/rating/{pk}")
-    async def delete_rating(self, pk: str, user=Depends(get_active_user)):
+    async def delete_rating(self,
+                            pk: str,
+                            user=Depends(get_active_user)
+                            ):
         return self.delete({"pk": pk, "user": user.id})
 
 
@@ -142,7 +146,9 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
         return self.list_detail()
 
     @threads.get("/comment/{pk}")
-    async def get_comment(self, pk: str):
+    async def get_comment(self,
+                          pk: str
+                          ):
         return self.get({"pk": pk})
 
     @threads.post("/{thread}/comment")
@@ -167,5 +173,8 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
         return self.patch({"pk": pk, "user": user.id}, comment)
 
     @threads.delete("/comment/{pk}")
-    async def delete_rating(self, pk: str, user=Depends(get_active_user)):
+    async def delete_rating(self,
+                            pk: str,
+                            user=Depends(get_active_user)
+                            ):
         return self.delete({"pk": pk, "user": user.id})
