@@ -16,7 +16,7 @@ from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
 # Additional Settings
 from config.config import get_settings
-from .oauthprovider import Authenticate
+from .oauthprovider import Authenticate, get_current_user
 # import custom serializers
 from .serializers import Token, UserBase, UserIn, UserOut
 from .models import User
@@ -57,6 +57,12 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
         delta_exp=token_expire_time
     )
     return session_data
+
+
+# Get Current Logged In User
+@user.get("/me", tags=["authenticate"], response_model=UserOut)
+async def me(user=Depends(get_current_user)):
+    return user._data
 
 
 @cbv(user)

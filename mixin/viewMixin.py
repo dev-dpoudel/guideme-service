@@ -259,3 +259,12 @@ class BasicViewSets(GetViewModel,
     def set_order(self, order: Optional[List[str]], alternate: List[str]):
         ''' Set Ordering Information '''
         self.Ordering = order if order else alternate
+
+
+# Declare ViewModel to dereference commong attributes
+class ListWithOwners(BaseViewModel):
+    ''' Declare a list_detail method to get details '''
+    def list_detail(self):
+        models = self.queryset()
+        model_data = [self.Output(**model._data, owner=model.owner) for model in models]  # noqa E501
+        return model_data

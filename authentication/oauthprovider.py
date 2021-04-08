@@ -9,7 +9,7 @@ from passlib.context import CryptContext
 from jose import jwt, exceptions
 # import from custom models
 from config.config import get_settings
-from .serializers import UserIn, Token
+from .serializers import UserOut, Token
 from .models import User
 
 # Following OAUTH Specifiaction tokenUrl is set as token
@@ -100,9 +100,7 @@ class Authenticate:
         groups, scope = instance.scopes
         self._scopes.update(scope)
         self._groups = groups
-        # Get Pydantic model from the output
-        user = UserIn(**instance._data)
-        return user
+        return instance
 
     # Authenticate given username and paswword
     def authenticate_user(self, username: str, password: str):
@@ -156,9 +154,9 @@ def get_current_user(token: str = Depends(oauth),
 
 
 # Get Current Active User
-async def get_active_user(current_user: UserIn = Depends(get_current_user)):
+async def get_active_user(current_user: UserOut = Depends(get_current_user)):
     if not current_user:
-        return UserIn(username="Anonymous")
+        return UserOut(username="Anonymous")
     elif current_user.is_active:
         return current_user
     else:

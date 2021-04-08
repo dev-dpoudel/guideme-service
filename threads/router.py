@@ -10,7 +10,7 @@ from dependencies.exceptions import ModelException
 from dependencies.filters import app_filter, FilterModel
 from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
-from authentication.oauthprovider import Authenticate  # noqa E501
+from authentication.oauthprovider import get_active_user
 # import custom serializers
 from .serializers import (RatingsOut,
                           RatingsIn,
@@ -21,7 +21,7 @@ from .serializers import (RatingsOut,
                           )
 from .models import Ratings, Comments
 # import ViewSets
-from mixin.viewMixin import BasicViewSets
+from mixin.viewMixin import BasicViewSets, ListWithOwners
 from mongoengine.queryset.visitor import Q  # noqa E501
 from dependencies.exceptions import ModelException  # noqa E501
 from places.router import PlaceViewModel
@@ -53,7 +53,7 @@ def get_reference_model(thread: str, entity: BaseModel):
 
 
 @cbv(threads)
-class RatingsViewModel(BasicViewSets):
+class RatingsViewModel(BasicViewSets, ListWithOwners):
     '''
     Declaration for Class Based views for serializers Class
     '''
@@ -75,34 +75,47 @@ class RatingsViewModel(BasicViewSets):
         self.add_raw_query(raw_filter)
         self.set_page(page)
         self.set_order(order_by, ['+name'])
-        return self.list()
+        return self.list_detail()
 
     @threads.get("/rating/{pk}")
     async def get_rating(self, pk: str):
         return self.get({"pk": pk})
 
     @threads.post("/{thread}/rating/")
-    async def create_rating(self, thread: str, rating: RatingsIn):
+    async def create_rating(self,
+                            thread: str,
+                            rating: RatingsIn,
+                            user=Depends(get_active_user)
+                            ):
         instance = get_reference_model(thread, rating)
         rating.thread = instance
+        rating.user = user.id
         return self.create(rating)
 
     @threads.patch("/rating/{pk}")
-    async def patch_rating(self, pk: str, rating: RatingsUpdate):
+    async def patch_rating(self,
+                           pk: str,
+                           rating: RatingsUpdate,
+                           user=Depends(get_active_user)
+                           ):
         self.Input = RatingsUpdate
-        return self.patch({"pk": pk}, rating)
+        return self.patch({"pk": pk, "user": user.id}, rating)
 
     @threads.put("/rating/{pk}")
-    async def update_rating(self, pk: str,  rating: RatingsIn):
-        return self.put({"pk": pk}, rating)
+    async def update_rating(self,
+                            pk: str,
+                            rating: RatingsIn,
+                            user=Depends(get_active_user)
+                            ):
+        return self.put({"pk": pk, "user": user.id}, rating)
 
     @threads.delete("/rating/{pk}")
-    async def delete_rating(self, pk: str):
-        return self.delete({"pk": pk})
+    async def delete_rating(self, pk: str, user=Depends(get_active_user)):
+        return self.delete({"pk": pk, "user": user.id})
 
 
 @cbv(threads)
-class CommentsViewModel(BasicViewSets):
+class CommentsViewModel(BasicViewSets, ListWithOwners):
     '''
     Declaration for Class Based views for Comment Class
     '''
@@ -121,29 +134,38 @@ class CommentsViewModel(BasicViewSets):
 
         # Apply incomming filter. Append raw filters
         self.Filter = filters
-        # raw_filter = {'thread._ref.$id': ObjectId(refId)}
-        raw_filter = ""
+        raw_filter = {'thread._ref.$id': ObjectId(refId)}
         self.add_raw_query(raw_filter)
         self.set_page(page)
         self.set_order(order_by, ['+modified_date'])
         # Return Output List
-        return self.list()
+        return self.list_detail()
 
     @threads.get("/comment/{pk}")
     async def get_comment(self, pk: str):
         return self.get({"pk": pk})
 
     @threads.post("/{thread}/comment")
-    async def create_comment(self, thread: str, comment: CommentsIn):
+    async def create_comment(self,
+                             thread: str,
+                             comment: CommentsIn,
+                             user=Depends(get_active_user)
+                             ):
+        # Get Reference Model
         instance = get_reference_model(thread, comment)
         comment.thread = instance
+        comment.user = user.id
         return self.create(comment)
 
     @threads.patch("/comment/{pk}")
-    async def patch_rating(self, pk: str, comment: CommentsUpdate):
+    async def patch_rating(self,
+                           pk: str,
+                           comment: CommentsUpdate,
+                           user=Depends(get_active_user)
+                           ):
         self.Input = CommentsUpdate
-        return self.patch({"pk": pk}, comment)
+        return self.patch({"pk": pk, "user": user.id}, comment)
 
     @threads.delete("/comment/{pk}")
-    async def delete_rating(self, pk: str):
-        return self.delete({"pk": pk})
+    async def delete_rating(self, pk: str, user=Depends(get_active_user)):
+        return self.delete({"pk": pk, "user": user.id})

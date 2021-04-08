@@ -1,11 +1,11 @@
 from mongoengine import fields as Field
-from mixin.baseDocument import TagsDocument
+from mixin.baseDocument import OwnerAndTags
 from authentication.models import User  # noqa E501
 
 
 # User document for Product informations.
 # Dynamic Document is used to store incomming relevant details if any
-class Product(TagsDocument):
+class Product(OwnerAndTags):
     ''' Product Description
         Additional Details:
             Manufacture and Expiry Date
@@ -56,8 +56,4 @@ class Product(TagsDocument):
     expiry_date = Field.DateTimeField(
         help_text="Expiry",
         null=False
-    )
-    owner = Field.ReferenceField(
-        'User',
-        help_text="User"
     )

@@ -1,13 +1,12 @@
-from mongoengine import Document, CASCADE
 from mongoengine import fields as Field
-from authentication.models import User
 from items.models import Product
 from places.models import Place
 from datetime import datetime
+from mixin.baseDocument import OwnerDocument
 
 
 # Ratings document for rating information
-class Ratings(Document):
+class Ratings(OwnerDocument):
     thread = Field.GenericReferenceField(
         help_text="Generic Reference to all the modules",
         required=True
@@ -21,15 +20,10 @@ class Ratings(Document):
         default=0,
         required=True
     )
-    user = Field.ReferenceField(
-        User,
-        help_text="User",
-        reverse_delete_rule=CASCADE
-    )
 
 
 # Ratings document for Comment information
-class Comments(Document):
+class Comments(OwnerDocument):
     thread = Field.GenericReferenceField(
         help_text="Generic Reference to all the modules",
         required=True,
@@ -39,11 +33,6 @@ class Comments(Document):
         help_text="User rating",
         default=0,
         required=True
-    )
-    user = Field.ReferenceField(
-        User,
-        help_text="User",
-        reverse_delete_rule=CASCADE
     )
     modified_date = Field.DateTimeField(
         help_text="Modified Date",
