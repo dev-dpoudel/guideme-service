@@ -68,6 +68,24 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
                            order_by: SortingModel = Depends(app_ordering),
                            page: PageModel = Depends(pagination)
                            ):
+        """ Returns list of available ratings for selected object id.
+
+        Parameters
+        ----------
+        refId : str
+            ReferenceId for Related Model e.g. Product.id.
+        filters : FilterModel
+            Filtering Parameters
+        order_by : SortingModel
+            Sorting Parameters
+        page : PageModel
+            Pagination parameteres
+
+        Returns
+        -------
+         List of User Ratings
+
+        """
 
         self.Filter = filters
         raw_filter = {'thread._ref.$id': ObjectId(refId)}
@@ -80,6 +98,18 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
     async def get_rating(self,
                          pk: str
                          ):
+        """Short summary.
+
+        Parameters
+        ----------
+        pk : str
+            Primary Unique Key Id.
+
+        Returns
+        -------
+            Ratings object.
+
+        """
         return self.get({"pk": pk})
 
     @threads.post("/{thread}/rating/")
@@ -88,6 +118,20 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
                             rating: RatingsIn,
                             user=Depends(get_active_user)
                             ):
+        """Create Ratings for given object.
+
+        Parameters
+        ----------
+        thread : str
+            Type of referenced object i.e. product, place
+        rating : RatingsIn
+            Ratings Model to store rating
+
+        Returns
+        -------
+        Instance of newly created rating
+
+        """
         instance = get_reference_model(thread, rating)
         rating.thread = instance
         rating.user = user.id
@@ -99,22 +143,39 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
                            rating: RatingsUpdate,
                            user=Depends(get_active_user)
                            ):
+        """Short summary.
+
+        Parameters
+        ----------
+        pk : str
+            Primary Id of ratings.
+        rating : RatingsUpdate
+            Update Data Model.
+
+        Returns
+        -------
+        Updated instance if owner is  current_user
+
+        """
         self.Input = RatingsUpdate
         return self.patch({"pk": pk, "user": user.id}, rating)
-
-    @threads.put("/rating/{pk}")
-    async def update_rating(self,
-                            pk: str,
-                            rating: RatingsIn,
-                            user=Depends(get_active_user)
-                            ):
-        return self.put({"pk": pk, "user": user.id}, rating)
 
     @threads.delete("/rating/{pk}")
     async def delete_rating(self,
                             pk: str,
                             user=Depends(get_active_user)
                             ):
+        """Delete the selected instance
+
+        Parameters
+        ----------
+        pk : str
+            Primary Key for instance.
+        Returns
+        -------
+        Success if current_user is the instance.owner
+
+        """
         return self.delete({"pk": pk, "user": user.id})
 
 
@@ -135,6 +196,24 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
                             order_by: SortingModel = Depends(app_ordering),
                             page: PageModel = Depends(pagination)
                             ):
+        """List comments for objects.
+
+        Parameters
+        ----------
+        refId : str
+            Id of object referenced.
+        filters : FilterModel
+            Filters to apply
+        order_by : SortingModel
+            Sorting Orders
+        page : PageModel
+            Pagination Model
+
+        Returns
+        -------
+        List all available comments that matches refId and filters
+
+        """
 
         # Apply incomming filter. Append raw filters
         self.Filter = filters
@@ -149,6 +228,18 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
     async def get_comment(self,
                           pk: str
                           ):
+        """Get selected comment instance.
+
+        Parameters
+        ----------
+        pk : str
+            Primarykey for Comments
+
+        Returns
+        -------
+        Instance of comments where pkk matches input pk.
+
+        """
         return self.get({"pk": pk})
 
     @threads.post("/{thread}/comment")
@@ -157,6 +248,19 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
                              comment: CommentsIn,
                              user=Depends(get_active_user)
                              ):
+        """Create comments for reeferencing models
+
+        Parameters
+        ----------
+        thread : str
+            DType of object referenced
+        comment : CommentsIn
+            Comment Model for the objects.
+        Returns
+        -------
+        Creates and returns instance of comment if user is active
+
+        """
         # Get Reference Model
         instance = get_reference_model(thread, comment)
         comment.thread = instance
@@ -164,17 +268,43 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
         return self.create(comment)
 
     @threads.patch("/comment/{pk}")
-    async def patch_rating(self,
-                           pk: str,
-                           comment: CommentsUpdate,
-                           user=Depends(get_active_user)
-                           ):
+    async def patch_comment(self,
+                            pk: str,
+                            comment: CommentsUpdate,
+                            user=Depends(get_active_user)
+                            ):
+        """Update the comment instance.
+
+        Parameters
+        ----------
+        pk : str
+            Primarykey for comment.
+        comment : CommentsUpdate
+            Update Data model.
+
+        Returns
+        -------
+        Updated instance of comments if current user is the owner.
+
+        """
         self.Input = CommentsUpdate
         return self.patch({"pk": pk, "user": user.id}, comment)
 
     @threads.delete("/comment/{pk}")
-    async def delete_rating(self,
-                            pk: str,
-                            user=Depends(get_active_user)
-                            ):
+    async def delete_comment(self,
+                             pk: str,
+                             user=Depends(get_active_user)
+                             ):
+        """Delete Selected instance if user is the owner.
+
+        Parameters
+        ----------
+        pk : str
+            Primary key for the comment.
+        Returns
+        -------
+        Success if deleted i.e. when owner is the user.
+        Returns HttpException if user is not the owner
+
+        """
         return self.delete({"pk": pk, "user": user.id})

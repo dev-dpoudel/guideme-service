@@ -43,6 +43,21 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
                           order_by: SortingModel = Depends(app_ordering),
                           page: PageModel = Depends(pagination)
                           ):
+        """Get List of available places.
+
+        Parameters
+        ----------
+        filters : FilterModel
+            Filter to be applied.
+        order_by : SortingModel
+            Ordering Models
+        page : PageModel
+            Pagination information
+        Returns
+        -------
+        List of available places based on filters.
+
+        """
         self.Filter = filters
         self.Ordering = order_by if order_by else ['+name']
         self.limit = page.limit
@@ -53,6 +68,17 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
     async def get_place(self,
                         pk: str
                         ):
+        """Get selected places.
+
+        Parameters
+        ----------
+        pk : str
+            Primary key for places.
+
+        Returns
+        -------
+        Instance of place selected per place
+        """
         return self.get_detail({"pk": pk})
 
     @place.post("/")
@@ -60,6 +86,17 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
                            place: PlaceIn,
                            user=Depends(get_active_user)
                            ):
+        """Creates place instance as requested.
+
+        Parameters
+        ----------
+        place : PlaceIn
+            Place instance requested for users.
+
+        Returns
+        -------
+        Newly created instance if user is active.
+        """
         place.user = user.id
         return self.create(place)
 
@@ -69,6 +106,19 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
                           place: PlaceUpdate,
                           user=Depends(get_active_user)
                           ):
+        """Update place instance.
+
+        Parameters
+        ----------
+        pk : str
+            Primary key for selected instance.
+        place : PlaceUpdate
+            Update model for place.
+
+        Returns
+        -------
+        Returns updated instance for place if user is the owner
+        """
         self.Input = PlaceUpdate
         return self.patch({"pk": pk, "user": user.id}, place)
 
@@ -78,10 +128,35 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
                            place: PlaceIn,
                            user=Depends(get_active_user)
                            ):
+        """Returns updated place.
+
+        Parameters
+        ----------
+        pk : str
+            Primartkey for the selected instance.
+        place : PlaceIn
+            Update instance for place.
+
+        Returns
+        -------
+        Returns updated instance if user is the owner.
+
+        """
         return self.put({"pk": pk, "user": user.id}, place)
 
     @place.delete("/{pk}")
     async def delete_place(self,
                            pk: str,
                            user=Depends(get_active_user)):
+        """Delete instance if owner is the user.
+
+        Parameters
+        ----------
+        pk : str
+            Primary Key for place instance.
+
+        Returns
+        -------
+        Returns success if place owner is the current user
+        """
         return self.delete({"pk": pk, "user": user.id})

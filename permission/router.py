@@ -1,14 +1,5 @@
 # import fastapi components
-from fastapi import APIRouter
-from fastapi import Depends  # noqa E501
-# import fastapi utils for class based views
-# from fastapi_utils.cbv import cbv
-from dependencies.cbv import cbv
-# import custom dependencies
-from dependencies.exceptions import ModelException  # noqa E501
-from dependencies.filters import app_filter, FilterModel
-from dependencies.sorting import app_ordering, SortingModel
-from dependencies.pagination import PageModel, pagination
+from fastapi import APIRouter, Depends
 # Additioanl dependencies
 from authentication.oauthprovider import is_admin_user
 # import custom serializers
@@ -17,7 +8,15 @@ from authentication.models import Group
 # import ViewSets
 from mixin.viewMixin import BasicViewSets
 from mongoengine.queryset.visitor import Q  # noqa E501
-
+# import common dependencies
+from dependencies import (cbv,
+                          app_filter,
+                          FilterModel,
+                          app_ordering,
+                          SortingModel,
+                          PageModel,
+                          pagination
+                          )
 
 # Instantiate a API Router for user authentication
 permission = APIRouter(prefix="/group",
@@ -44,6 +43,21 @@ class GroupViewModel(BasicViewSets):
                           order_by: SortingModel = Depends(app_ordering),
                           page: PageModel = Depends(pagination)
                           ):
+        """List available groups.
+
+        Parameters
+        ----------
+        filters : FilterModel
+            Filter model information.
+        order_by : SortingModel
+            sorting information.
+        page : PageModel
+            Pagination Information.
+        Returns
+        -------
+        Available list of groups.
+
+        """
         self.Filter = filters
         self.Ordering = order_by if order_by else ['+name']
         self.limit = page.limit
@@ -52,24 +66,77 @@ class GroupViewModel(BasicViewSets):
 
     @permission.get("/{group_name}")
     async def get_group(self, group_name: str):
+        """Get Selected Instance of group.
+
+        Parameters
+        ----------
+        group_name : str
+            Group Name.
+
+        Returns
+        -------
+        List instance of group
+        """
         return self.get({"name": group_name})
 
     @permission.get("/id/{pk}")
     async def get_group_by_Id(self, pk: str):
+        """Get Group By Id.
+
+        Parameters
+        ----------
+        pk : str
+            Get instance for the group based on pk.
+
+        Returns
+        -------
+        Returns group instance if available
+
+        """
         return self.get({"pk": pk})
 
     @permission.post("/")
     async def create_group(self, group: GroupBase):
+        """Create a group instance.
+
+        Parameters
+        ----------
+        group : GroupBase
+            Requested instance of 'group'.
+
+        Returns
+        -------
+        Instance of group.
+
+        """
         return self.create(group)
 
     @permission.patch("/")
     async def patch_group(self, group: GroupBase):
-        return self.patch({"name": group.name}, group)
+        """Update inatance of group.
 
-    @permission.put("/")
-    async def update_group(self, group: GroupBase):
-        return self.put({"name": group.name}, group)
+        Parameters
+        ----------
+        group : GroupBase
+            Update information.
+
+        Returns
+        -------
+        Updated instance if current user is the admin
+        """
+        return self.patch({"name": group.name}, group)
 
     @permission.delete("/{name}")
     async def delete_group(self, name: str):
+        """Delete group conntext.
+
+        Parameters
+        ----------
+        name : str
+            Delete instance for the user.
+
+        Returns
+        -------
+        Success if user is admin else error
+        """
         return self.delete({"name": name})

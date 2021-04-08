@@ -36,6 +36,21 @@ user = APIRouter(prefix="/user",
 @user.post("/token", tags=["authenticate"], response_model=Token)
 async def login(form_data: OAuth2PasswordRequestForm = Depends(),
                 settings=Depends(get_settings)):
+    """Authenticate current user.
+
+    Parameters
+    ----------
+    username : string
+        Username of user
+    password : string
+        password of user
+    grant_type: authentication type
+
+    Returns
+    -------
+    Session token and user scope information
+
+    """
 
     # User authentication module
     Auth = Authenticate(secret_key=settings.secret_key,
@@ -63,6 +78,15 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(),
 # Get Current Logged In User
 @user.get("/me", tags=["authenticate"], response_model=UserOut)
 async def me(user=Depends(get_current_user)):
+    """Get Details for current logged in user.
+
+    Parameters
+    ----------
+
+    Returns
+    -------
+    Instance of current logged in user
+    """
     return user._data
 
 
@@ -82,7 +106,20 @@ class UserViewModel(BasicViewSets):
                         order_by: SortingModel = Depends(app_ordering),
                         page: PageModel = Depends(pagination)
                         ):
+        """List all users for application.
 
+        Parameters
+        ----------
+        filters : FilterModel
+            Filter description to be applied.
+        order_by : SortingModel
+            Sorting Model to be used
+        page : PageModel
+            Pagination information
+        Returns
+        -------
+        List of available users
+        """
         # Set Filter and Sort Parameters
         self.Filter = filters
         self.Ordering = order_by if order_by else ['+username']
@@ -92,6 +129,17 @@ class UserViewModel(BasicViewSets):
 
     @user.get("/{username}", dependencies=[Depends(is_admin_user)])
     async def get_user(self, username: str):
+        """Get user instance as selected.
+
+        Parameters
+        ----------
+        username : str
+            unique username of user.
+
+        Returns
+        -------
+        User instance if currentUser is admin
+        """
         instance = self.get_instance({"username": username})
         # Get Added group and permission level
         groups, permission = instance.scopes
@@ -103,7 +151,19 @@ class UserViewModel(BasicViewSets):
     async def create_user(self,
                           username: str = Form(...),
                           password: str = Form(...)):
+        """Create User Instance.
 
+        Parameters
+        ----------
+        username : str
+            User desired username.
+        password : str
+            Password for user account.
+
+        Returns
+        -------
+        Returns instance of newly created user
+        """
         password = Authenticate.get_hash(password)
         user = UserIn(username=username, password=password)
         return self.create(user)
@@ -113,6 +173,17 @@ class UserViewModel(BasicViewSets):
                           user: UserBase,
                           current_user=Depends(get_current_user)
                           ):
+        """Update input user instance.
+
+        Parameters
+        ----------
+        user : UserBase
+            Selected update data for user.
+        Returns
+        -------
+        Updated user instance if Currentuser is the owner
+
+        """
         if current_user.username != user.username:
             return ModelException.access_violation_error()
 
@@ -120,10 +191,30 @@ class UserViewModel(BasicViewSets):
 
     @user.delete("/{username}", dependencies=[Depends(is_admin_user)])
     async def delete_user(self, username: str):
+        """Delete given instance.
+
+        Parameters
+        ----------
+        username : str
+            Unique username.
+
+        Returns
+        -------
+        Success if deleted. CurrentUser Must be admin.
+        """
         return self.delete({"username": username})
 
     @user.delete("/")
     async def delete_self(self, user=Depends(get_current_user)):
+        """Delete user account.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Succes message if self. Else HttpException is raised
+        """
         return self.delete({"username": user.username})
 
     @user.post("/password")
@@ -132,6 +223,20 @@ class UserViewModel(BasicViewSets):
                               old_pass: str = Form(...),
                               password: str = Form(...)
                               ):
+        """Update user password
+
+        Parameters
+        ----------
+        old_pass : str
+            Old password.
+        password : str
+            New Password.
+
+        Returns
+        -------
+        Success message.
+
+        """
 
         instance = instance = self.get_instance({"username": user.username})
 
@@ -144,10 +249,50 @@ class UserViewModel(BasicViewSets):
 
         return {"status": 200, "detial": "Success"}
 
+    @user.post("/password/set", dependencies=[Depends(is_admin_user)])
+    async def set_password(self,
+                           username: str = Form(...),
+                           password: str = Form(...)
+                           ):
+        """Set user password. Admin rights needed.
+
+        Parameters
+        ----------
+        old_pass : str
+            Old password.
+        password : str
+            New Password.
+
+        Returns
+        -------
+        Success message.
+
+        """
+        hash = Authenticate.get_hash(password)
+        self.atomic_update({"username": username},
+                           {"set__password": hash}
+                           )
+
+        return {"status": 200, "detial": "Success"}
+
     @ user.patch("/{username}/group/add",
                  dependencies=[Depends(is_admin_user)]
                  )
     async def add_group(self, username: str, groups: List[str] = Form(...)):
+        """Add group to given user. Admin only.
+
+        Parameters
+        ----------
+        username : str
+            Username selected.
+        groups : List[str]
+            List of groups to assign user to.
+
+        Returns
+        -------
+        User instance if user is admin else HttpException.
+
+        """
         return self.atomic_update({"username": username},
                                   {"push_all__group": groups}
                                   )
@@ -156,6 +301,20 @@ class UserViewModel(BasicViewSets):
                  dependencies=[Depends(is_admin_user)]
                  )
     async def remove_group(self, username: str, groups: List[str] = Form(...)):
+        """Remove group from given user. Admin only.
+
+        Parameters
+        ----------
+        username : str
+            Username selected.
+        groups : List[str]
+            List of groups to remove from user.
+
+        Returns
+        -------
+        User instance if user is admin else HttpException.
+
+        """
         return self.atomic_update({"username": username},
                                   {"pull_all__group": groups}
                                   )
