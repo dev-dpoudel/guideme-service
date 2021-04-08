@@ -268,3 +268,11 @@ class ListWithOwners(BaseViewModel):
         models = self.queryset()
         model_data = [self.Output(**model._data, owner=model.owner) for model in models]  # noqa E501
         return model_data
+
+
+# Declare ViewModel to dereference commong attributes
+class GetWithOwners(BaseViewModel):
+    ''' Declare a list_detail method to get details '''
+    def get_detail(self, Kwargs: dict):
+        instance = self.get_instance(Kwargs)
+        return self.Output(**instance._data, owner=instance.owner)

@@ -1,7 +1,6 @@
-from typing import List, Optional, Any  # noqa
-from pydantic import BaseModel, Field  # noqa
+from typing import Optional, Any
+from pydantic import BaseModel, Field
 from mixin.baseOutput import BaseOut
-from authentication.serializers import UserOut
 from datetime import datetime
 
 

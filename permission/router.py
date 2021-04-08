@@ -10,7 +10,7 @@ from dependencies.filters import app_filter, FilterModel
 from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
 # Additioanl dependencies
-from authentication.oauthprovider import Authenticate  # noqa E501
+from authentication.oauthprovider import is_admin_user
 # import custom serializers
 from authentication.serializers import GroupBase, GroupOut
 from authentication.models import Group
@@ -22,6 +22,7 @@ from mongoengine.queryset.visitor import Q  # noqa E501
 # Instantiate a API Router for user authentication
 permission = APIRouter(prefix="/group",
                        tags=["permissions"],
+                       dependencies=[Depends(is_admin_user)],
                        responses={404: {"description": "Not found"}
                                   }
                        )

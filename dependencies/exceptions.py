@@ -69,3 +69,10 @@ class ModelException:
             status_code=status.HTTP_417_EXPECTATION_FAILED,
             detail=error.errors()
         )
+
+    @staticmethod
+    def access_violation_error(error: str):
+        return HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail="Access Violation Error"
+        )

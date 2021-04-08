@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from pydantic import BaseModel
 from mixin.baseOutput import BaseOut
 
@@ -16,12 +16,12 @@ class PlaceBase(BaseModel):
 
 # Class Declaration for Input Serializers
 class PlaceIn(PlaceBase):
-    pass
+    user: Optional[str]
 
 
 # Class Declaration for Ouput Serializers
 class PlaceOut(PlaceBase, BaseOut):
-    pass
+    owner: Optional[Any]
 
 
 # Class Declaration for Update Serializers

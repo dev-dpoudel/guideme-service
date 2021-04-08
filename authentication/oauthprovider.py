@@ -154,10 +154,16 @@ def get_current_user(token: str = Depends(oauth),
 
 
 # Get Current Active User
-async def get_active_user(current_user: UserOut = Depends(get_current_user)):
-    if not current_user:
-        return UserOut(username="Anonymous")
-    elif current_user.is_active:
+def get_active_user(current_user: UserOut = Depends(get_current_user)):
+    if current_user.is_active:
         return current_user
     else:
         raise HTTPException(status_code=417, detail="User is inactive")
+
+
+# Check if User is admin
+def is_admin_user(user=Depends(get_current_user)):
+    ''' Check if the user is admin or not '''
+    groups, scope = user.scopes
+    if "Admin" not in groups:
+        raise HTTPException(status_code=417, detail="Access Right Violation")

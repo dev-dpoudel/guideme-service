@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import Optional, List, Any
 from datetime import datetime
 from pydantic import BaseModel
 from mixin.baseOutput import BaseOut
@@ -19,12 +19,12 @@ class ProductBase(BaseModel):
 
 # Class Declaration for Input Serializers
 class ProductIn(ProductBase):
-    pass
+    user: Optional[str]
 
 
 # Class Declaration for Ouput Serializers
 class ProductOut(ProductBase, BaseOut):
-    pass
+    owner: Optional[Any]
 
 
 class ProductUpdate(ProductBase, BaseOut):

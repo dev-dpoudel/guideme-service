@@ -16,7 +16,7 @@ from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
 # Additional Settings
 from config.config import get_settings
-from .oauthprovider import Authenticate, get_current_user
+from .oauthprovider import Authenticate, get_current_user, is_admin_user
 # import custom serializers
 from .serializers import Token, UserBase, UserIn, UserOut
 from .models import User
@@ -89,7 +89,7 @@ class UserViewModel(BasicViewSets):
         self.skip = page.skip
         return self.list()
 
-    @user.get("/{username}")
+    @user.get("/{username}", dependencies=[Depends(is_admin_user)])
     async def get_user(self, username: str):
         instance = self.get_instance({"username": username})
         # Get Added group and permission level
@@ -108,21 +108,31 @@ class UserViewModel(BasicViewSets):
         return self.create(user)
 
     @user.patch("/update")
-    async def update_user(self, user: UserBase):
+    async def update_user(self,
+                          user: UserBase,
+                          current_user=Depends(get_current_user)
+                          ):
+        if current_user.username != user.username:
+            return ModelException.access_violation_error()
+
         return self.patch({"username": user.username}, user)
 
-    @user.delete("/{username}")
+    @user.delete("/{username}", dependencies=[Depends(is_admin_user)])
     async def delete_user(self, username: str):
         return self.delete({"username": username})
 
+    @user.delete("/")
+    async def delete_self(self, user=Depends(get_current_user)):
+        return self.delete({"username": user.username})
+
     @user.post("/password")
     async def update_password(self,
-                              username: str = Form(...),
+                              user=Depends(get_current_user),
                               old_pass: str = Form(...),
                               password: str = Form(...)
                               ):
 
-        instance = instance = self.get_instance({"username": username})
+        instance = instance = self.get_instance({"username": user.username})
         if not Authenticate.validate_hash(old_pass, instance.password):
             raise Authenticate.InvalidCredentials_exception
         hash = Authenticate.get_hash(password)
@@ -131,13 +141,17 @@ class UserViewModel(BasicViewSets):
 
         return {"status": 200, "detial": "Success"}
 
-    @user.patch("/{username}/group/add")
+    @ user.patch("/{username}/group/add",
+                 dependencies=[Depends(is_admin_user)]
+                 )
     async def add_group(self, username: str, groups: List[str] = Form(...)):
         return self.atomic_update({"username": username},
                                   {"push_all__group": groups}
                                   )
 
-    @user.patch("/{username}/group/remove")
+    @ user.patch("/{username}/group/remove",
+                 dependencies=[Depends(is_admin_user)]
+                 )
     async def remove_group(self, username: str, groups: List[str] = Form(...)):
         return self.atomic_update({"username": username},
                                   {"pull_all__group": groups}

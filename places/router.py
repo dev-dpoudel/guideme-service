@@ -8,12 +8,12 @@ from dependencies.cbv import cbv
 from dependencies.filters import app_filter, FilterModel
 from dependencies.sorting import app_ordering, SortingModel
 from dependencies.pagination import PageModel, pagination
-from authentication.oauthprovider import Authenticate  # noqa E501
+from authentication.oauthprovider import get_active_user
 # import custom serializers
 from .serializers import PlaceIn, PlaceOut, PlaceUpdate
 from .models import Place
 # import ViewSets
-from mixin.viewMixin import BasicViewSets
+from mixin.viewMixin import BasicViewSets, GetWithOwners
 from mongoengine.queryset.visitor import Q  # noqa E501
 from dependencies.exceptions import ModelException  # noqa E501
 
@@ -27,7 +27,7 @@ place = APIRouter(prefix="/place",
 
 
 @cbv(place)
-class PlaceViewModel(BasicViewSets):
+class PlaceViewModel(BasicViewSets, GetWithOwners):
     '''
     Declaration for Class Based views for serializers Class
     '''
@@ -51,21 +51,33 @@ class PlaceViewModel(BasicViewSets):
 
     @place.get("/{pk}")
     async def get_place(self, pk: str):
-        return self.get({"pk": pk})
+        return self.get_detail({"pk": pk})
 
     @place.post("/")
-    async def create_place(self, place: PlaceIn):
+    async def create_place(self,
+                           place: PlaceIn,
+                           user=Depends(get_active_user)
+                           ):
+        place.user = user.id
         return self.create(place)
 
     @place.patch("/{pk}")
-    async def patch_place(self, pk: str, place: PlaceUpdate):
+    async def patch_place(self,
+                          pk: str,
+                          place: PlaceUpdate,
+                          user=Depends(get_active_user)
+                          ):
         self.Input = PlaceUpdate
-        return self.patch({"pk": pk}, place)
+        return self.patch({"pk": pk, "user": user.id}, place)
 
     @place.put("/{pk}")
-    async def update_place(self, pk: str, place: PlaceIn):
-        return self.put({"pk": pk}, place)
+    async def update_place(self,
+                           pk: str,
+                           place: PlaceIn,
+                           user=Depends(get_active_user)
+                           ):
+        return self.put({"pk": pk, "user": user.id}, place)
 
     @place.delete("/{pk}")
-    async def delete_place(self, pk: str):
-        return self.delete({"pk": pk})
+    async def delete_place(self, pk: str, user=Depends(get_active_user)):
+        return self.delete({"pk": pk, "user": user.id})
