@@ -1,6 +1,5 @@
 from datetime import datetime
 from pydantic import validate_arguments
-from typing import List
 # import fastapi components
 from fastapi import APIRouter, Depends, File, UploadFile
 from fastapi.responses import FileResponse
