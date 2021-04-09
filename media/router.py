@@ -2,7 +2,6 @@ from datetime import datetime
 from pydantic import validate_arguments
 # import fastapi components
 from fastapi import APIRouter, Depends, File, UploadFile
-from fastapi.responses import FileResponse
 from authentication import get_active_user
 from .models import Media
 from .serializers import MediaIn, MediaOut
@@ -21,7 +20,7 @@ from dependencies import (cbv,
                           )
 
 # Instantiate a API Router for user authentication
-media = APIRouter(prefix="",
+media = APIRouter(prefix="/media",
                   tags=["media"],
                   responses={404: {"description": "Not found"}
                              }
@@ -38,7 +37,7 @@ def get_reference_model(thread: str, Id: str):
     elif thread == "place":
         place = PlaceViewModel()
         instance = place.get(filter)
-    if thread == "rating":
+    elif thread == "rating":
         rating = RatingsViewModel()
         instance = rating.get_instance(filter)
     elif thread == "comment":
@@ -61,10 +60,11 @@ class MediaViewModel(BasicViewSets, ListWithOwners):
     Output = MediaOut
     Input = MediaIn
 
-    @media.post("/media/{refId}", response_class=FileResponse)
+    @media.post("/{refId}")
     async def list_media(self,
                          refId: str,
-                         filters: FilterModel = Depends(app_filter)
+                         filters: FilterModel = Depends(app_filter),
+                         skip: int = 0
                          ):
         """ Returns list of available ratings for selected object id.
 
@@ -80,12 +80,13 @@ class MediaViewModel(BasicViewSets, ListWithOwners):
          List of User Ratings
 
         """
-        files = []
         self.Filter = filters
+        self.skip = skip
+        self.limit = 1
         raw_filter = {'thread._ref.$id': ObjectId(refId)}
         self.add_raw_query(raw_filter)
         # Get Media Datas
-        medias: list = self.list_detail()
+        medias = self.list_detail()
 
         if not medias:
             raise ModelException.empty_result_info()
@@ -95,11 +96,46 @@ class MediaViewModel(BasicViewSets, ListWithOwners):
             filemanager.set_context(media.context)
             filemanager.set_content(media.content)
             file = filemanager.get_file(media.filename)
-            files.append(file)
+            break
 
-        return files
+        return file
 
-    @media.post("/{context}/media/")
+    @media.post("s/{refId}")
+    async def zip_media(self,
+                        refId: str,
+                        filters: FilterModel = Depends(app_filter),
+                        skip: int = 0
+                        ):
+        """ Returns list of available ratings for selected object id.
+
+        Parameters
+        ----------
+        refId : str
+            ReferenceId for Related Model e.g. Product.id.
+        filters : FilterModel
+            Filtering Parameters
+
+        Returns
+        -------
+         List of User Ratings
+
+        """
+        self.Filter = filters
+        self.skip = skip
+        raw_filter = {'thread._ref.$id': ObjectId(refId)}
+        self.add_raw_query(raw_filter)
+        # Get Media Datas
+        medias = self.list_detail()
+
+        if not medias:
+            raise ModelException.empty_result_info()
+
+        names = [file.filename for file in medias]
+        context = medias[0].context
+        filemanager = FileManager(context)
+        return filemanager.get_zip(names)
+
+    @media.post("/{context}/{threadId}")
     async def create_media(self,
                            context: str,
                            threadId: str,
@@ -135,12 +171,12 @@ class MediaViewModel(BasicViewSets, ListWithOwners):
         await filemanager.save_file(filename, file.file)
         return {"status": 200, "details": filename}
 
-    @media.delete("/{context}/media/")
-    async def delete_rating(self,
-                            context: str,
-                            filename: str,
-                            user=Depends(get_active_user)
-                            ):
+    @media.delete("/{context}/")
+    async def delete_media(self,
+                           context: str,
+                           filename: str,
+                           user=Depends(get_active_user)
+                           ):
         """Delete the selected instance
 
         Parameters

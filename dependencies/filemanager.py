@@ -1,8 +1,11 @@
 from config.config import get_settings
-import os
-import aiofiles
+from fastapi import Response
 from fastapi.responses import FileResponse
 from dependencies import ModelException
+import os
+import aiofiles
+import io
+import zipfile
 
 
 class FileManager:
@@ -13,6 +16,27 @@ class FileManager:
     def __init__(self, context: str, content: str = "image/*"):
         self._context = context
         self._content = content
+
+    def set_context(self, context):
+        ''' Set Context for Class '''
+        self._context = context
+
+    def set_content(self, content):
+        ''' Set Context for Class '''
+        self._content = content
+
+    def get_path(self, name):
+        # Get Setgigns for base Dirctory
+        settings = get_settings()
+        # Get ABslute path for file directory
+        path = os.path.join(settings.base_path, self._context)
+        # Check if path exists
+        if not os.path.exists(path):
+            os.makedirs(path, exist_ok=True)
+
+        filename = os.path.join(path, name)
+
+        return filename
 
     def get_file(self, name: str):
         filename = self.get_path(name)
@@ -38,23 +62,26 @@ class FileManager:
         else:
             raise ModelException.not_found("Requested File")
 
-    def get_path(self, name):
-        # Get Setgigns for base Dirctory
+    def get_zip(self, files):
+        # Aggisn fillename for zip file
+        zip_filename = "content.zip"
+        # Create In-Memory zip file
+        s = io.BytesIO()
+        zip = zipfile.ZipFile(s, "w")
         settings = get_settings()
-        # Get ABslute path for file directory
-        path = os.path.join(settings.base_path, self._context)
-        # Check if path exists
-        if not os.path.exists(path):
-            os.makedirs(path, exist_ok=True)
+        dir = os.path.join(settings.base_path, self._context)
 
-        filename = os.path.join(path, name)
+        # Write to Zip FIle
+        for file in files:
+            # Add file at correct path
+            path = os.path.join(dir, file)
+            zip.write(path, file)
 
-        return filename
+        # Pack Zip
+        zip.close()
 
-    def set_context(self, context):
-        ''' Set Context for Class '''
-        self._context = context
-
-    def set_content(self, content):
-        ''' Set Context for Class '''
-        self._content = content
+        headers = {'Content-Disposition': f'attachment; filename={zip_filename}'}  # noqa
+        return Response(s.getvalue(),
+                        media_type="application/x-zip-compressed",
+                        headers=headers
+                        )

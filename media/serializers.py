@@ -9,6 +9,7 @@ class MediaBase(BaseModel):
     content: Optional[str]
     thread: Optional[Any]
     context: str
+    user: Optional[Any]
 
 
 class MediaIn(MediaBase):
