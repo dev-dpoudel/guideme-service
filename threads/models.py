@@ -9,7 +9,8 @@ from mixin.baseDocument import OwnerDocument
 class Ratings(OwnerDocument):
     thread = Field.GenericReferenceField(
         help_text="Generic Reference to all the modules",
-        required=True
+        required=True,
+        choices=[Place, Product]
     )
     rating = Field.DecimalField(
         help_text="User rating",

@@ -10,14 +10,15 @@ class FileManager:
     Users aiofiles modules
     '''
 
-    def __init__(self, context: str):
-        self.context = context
+    def __init__(self, context: str, content: str = "image/*"):
+        self._context = context
+        self._content = content
 
     def get_file(self, name: str):
         filename = self.get_path(name)
         # Remove file if it exists
         if os.path.exists(filename):
-            return FileResponse(filename)
+            return FileResponse(filename, media_type=self._content)
 
         raise ModelException.not_found("file {}".format(filename))
 
@@ -41,7 +42,7 @@ class FileManager:
         # Get Setgigns for base Dirctory
         settings = get_settings()
         # Get ABslute path for file directory
-        path = os.path.join(settings.base_path, self.context)
+        path = os.path.join(settings.base_path, self._context)
         # Check if path exists
         if not os.path.exists(path):
             os.makedirs(path, exist_ok=True)
@@ -49,3 +50,11 @@ class FileManager:
         filename = os.path.join(path, name)
 
         return filename
+
+    def set_context(self, context):
+        ''' Set Context for Class '''
+        self._context = context
+
+    def set_content(self, content):
+        ''' Set Context for Class '''
+        self._content = content

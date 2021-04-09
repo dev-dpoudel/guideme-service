@@ -16,6 +16,7 @@ from permission.router import permission
 from items.router import product
 from places.router import place
 from threads.router import threads
+from media.router import media
 
 # Instantiate FastAPI instance
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
@@ -59,6 +60,7 @@ app.include_router(permission)
 app.include_router(product)
 app.include_router(place)
 app.include_router(threads)
+app.include_router(media)
 
 
 # Declare a startup Event

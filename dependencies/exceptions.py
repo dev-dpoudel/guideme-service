@@ -90,3 +90,10 @@ class ModelException:
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail=error
         )
+
+    @staticmethod
+    def empty_result_info():
+        return HTTPException(
+            status_code=status.HTTP_200_OK,
+            detail="Completed without results"
+        )
