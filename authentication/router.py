@@ -129,9 +129,8 @@ class UserViewModel(BasicViewSets):
         """
         # Set Filter and Sort Parameters
         self.Filter = filters
-        self.Ordering = order_by if order_by else ['+username']
-        self.limit = page.limit
-        self.skip = page.skip
+        self.set_page(page)
+        self.set_order(order_by, ['+username'])
         return self.list()
 
     @user.get("/{username}", dependencies=[Depends(is_admin_user)])

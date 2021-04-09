@@ -59,9 +59,8 @@ class GroupViewModel(BasicViewSets):
 
         """
         self.Filter = filters
-        self.Ordering = order_by if order_by else ['+name']
-        self.limit = page.limit
-        self.skip = page.skip
+        self.set_page(page)
+        self.set_order(order_by, ['+name'])
         return self.list()
 
     @permission.get("/{group_name}")

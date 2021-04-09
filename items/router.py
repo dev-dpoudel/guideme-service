@@ -59,9 +59,8 @@ class ItemViewModel(BasicViewSets, UpdateViewModel, GetWithOwners):
 
         """
         self.Filter = filters
-        self.Ordering = order_by if order_by else ['+name']
-        self.limit = page.limit
-        self.skip = page.skip
+        self.set_page(page)
+        self.set_order(order_by, ['+name'])
         return self.list()
 
     @product.get("/{pk}", response_model_exclude_unset=True)
