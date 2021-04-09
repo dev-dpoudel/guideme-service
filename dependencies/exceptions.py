@@ -76,3 +76,17 @@ class ModelException:
             status_code=status.HTTP_406_NOT_ACCEPTABLE,
             detail="Access Violation Error"
         )
+
+    @staticmethod
+    def atomic_update_error():
+        return HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Requested field doesn't exist"
+        )
+
+    @staticmethod
+    def upload_file_error(error: str):
+        return HTTPException(
+            status_code=status.HTTP_406_NOT_ACCEPTABLE,
+            detail=error
+        )

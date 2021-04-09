@@ -61,7 +61,7 @@ class RatingsViewModel(BasicViewSets, ListWithOwners):
     Output = RatingsOut
     Input = RatingsIn
 
-    @threads.post("/ratings/{refId}")
+    @threads.post("/ratings/{refId}", response_model_exclude_unset=True)
     async def list_ratings(self,
                            refId: str,
                            filters: FilterModel = Depends(app_filter),
@@ -189,7 +189,7 @@ class CommentsViewModel(BasicViewSets, ListWithOwners):
     Output = CommentsOut
     Input = CommentsIn
 
-    @threads.post("/comments/{refId}")
+    @threads.post("/comments/{refId}", response_model_exclude_unset=True)
     async def list_comments(self,
                             refId: str,
                             filters: FilterModel = Depends(app_filter),

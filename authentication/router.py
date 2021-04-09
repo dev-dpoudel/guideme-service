@@ -2,8 +2,14 @@
 from datetime import timedelta
 from typing import List
 # import fastapi components
-from fastapi import APIRouter, Depends, Form
+from fastapi import (APIRouter,
+                     Depends,
+                     Form,
+                     File,
+                     UploadFile
+                     )
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.responses import FileResponse
 # Additional Settings
 from config.config import get_settings
 from .oauthprovider import Authenticate, get_current_user, is_admin_user
@@ -21,7 +27,8 @@ from dependencies import (cbv,
                           app_ordering,
                           SortingModel,
                           PageModel,
-                          pagination
+                          pagination,
+                          FileManager
                           )
 
 
@@ -318,3 +325,65 @@ class UserViewModel(BasicViewSets):
         return self.atomic_update({"username": username},
                                   {"pull_all__group": groups}
                                   )
+
+    @user.post("/profile/")
+    async def set_profile(self,
+                          photo: UploadFile = File(...),
+                          user=Depends(get_current_user)
+                          ):
+        """Set Profile Image for current user
+
+            Parameters
+            ----------
+            photo : UploadFile
+                Profle image for user
+
+            Returns
+            -------
+                Returns success if sucessful.
+
+            """
+        if "image" not in photo.content_type.split("/"):
+            raise ModelException.upload_file_error("Please upload image file")
+
+        filemanager = FileManager("profile")
+        await filemanager.save_file(photo.filename, photo.file)
+        self.atomic_update({"username": user.username}, {"set__profile": None})
+        return {"status": 200, "details": photo.filename}
+
+    @user.get("/profile/{path}", response_class=FileResponse)
+    async def get_profile(self,
+                          path: str,
+                          ):
+        """Get Profile Image for current user
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+        Returns profile image for user
+        """
+        filemanager = FileManager("profile")
+        # file = filemanager.get_file(path)
+        return filemanager.get_file(path)
+
+    @user.delete("/profile/{name}")
+    async def unset_profile(self,
+                            name: str,
+                            user=Depends(get_current_user)
+                            ):
+        """Remove Profile image.
+
+        Parameters
+        ----------
+        Returns
+        -------
+            Empty user profile
+
+        """
+        filemanager = FileManager("profile")
+        filemanager.delete_file(name)
+        self.atomic_update({"username": user.username}, {"set__profile": None})
+
+        return {"status": 200, "detial": "Success"}

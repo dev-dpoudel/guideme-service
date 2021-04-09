@@ -95,5 +95,6 @@ async def info(settings: AppSettings = Depends(get_settings)):
         "db_host": settings.db_host,
         "db_port": settings.db_port,
         "algorithm": settings.algorithm,
-        "secret_key": settings.secret_key
+        "secret_key": settings.secret_key,
+        "profile_path": settings.base_path
     }

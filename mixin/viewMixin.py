@@ -224,7 +224,8 @@ class AtomicUpdateViewModel(BaseViewModel):
             instance.reload()
         except errors.DuplicateKeyError:
             raise self.already_exist(self.Model)
-
+        except InvalidQueryError:
+            raise self.atomic_update_error()
         return self.Output(**instance._data)
 
 

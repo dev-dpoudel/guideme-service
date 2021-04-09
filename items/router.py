@@ -64,7 +64,7 @@ class ItemViewModel(BasicViewSets, UpdateViewModel, GetWithOwners):
         self.skip = page.skip
         return self.list()
 
-    @product.get("/{pk}")
+    @product.get("/{pk}", response_model_exclude_unset=True)
     async def get_item(self,
                        pk: str
                        ):

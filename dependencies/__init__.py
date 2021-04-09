@@ -6,6 +6,7 @@ from .exceptions import ModelException
 from .filters import app_filter, FilterModel
 from .sorting import app_ordering, SortingModel
 from .pagination import PageModel, pagination
+from .filemanager import FileManager
 
 exports = [cbv,
            ModelException,
@@ -14,5 +15,6 @@ exports = [cbv,
            app_ordering,
            SortingModel,
            PageModel,
-           pagination
+           pagination,
+           FileManager
            ]

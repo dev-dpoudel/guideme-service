@@ -64,9 +64,9 @@ class PlaceViewModel(BasicViewSets, GetWithOwners):
         self.skip = page.skip
         return self.list()
 
-    @place.get("/{pk}")
+    @place.get("/{pk}", response_model_exclude_unset=True)
     async def get_place(self,
-                        pk: str
+                        pk: str,
                         ):
         """Get selected places.
 

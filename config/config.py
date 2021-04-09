@@ -1,6 +1,7 @@
 # Declare Application Level Settings
 from functools import lru_cache
 from pydantic import BaseSettings
+import os
 
 
 # SESSION ACTIVE TIME
@@ -9,6 +10,8 @@ SESSION_TIME = 15
 ALGORITHM = "HS256"
 # To Generate New use  openssl rand -hex 32
 SECRET_KEY = "1f2d98baf9dbd390b97a9750689297b12ea71fb6859219a797e1da111714b947"
+# Base Path for Directories
+ROOT_DIR = os.getcwd()
 
 
 # Declare class for Database Settings
@@ -37,6 +40,7 @@ class AppSettings(DatabaseSettings, SessionSettings):
     log_dir: str = ""
     admin_email: str = "ryon_a@hotmail.com"
     test_email: str = "dinesh.poudel_nepal@outlook.com"
+    base_path: str = os.path.join(ROOT_DIR, 'files')
 
     # Get Environmental Variables from environment files
     class Config:

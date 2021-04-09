@@ -44,7 +44,7 @@ class User(Document):
     )
 
     # User Profile Image
-    profile = Field.ImageField(
+    profile = Field.StringField(
         help_text="Profile Image"
     )
 
