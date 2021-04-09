@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 from pydantic import BaseModel, Field, EmailStr
 from datetime import datetime
 from mixin.baseOutput import BaseOut
@@ -110,6 +110,8 @@ class UserIn(UserBase):
 
 # User class for read-operation. Multiple records are fetched
 class UserOut(BaseOut, UserBase):
+    profile: Optional[str] = Field(None,
+                                   description="Filename for Image")
     groups: List[str] = Field(None,
                               description="List og assigned groups to user")
 

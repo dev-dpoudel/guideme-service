@@ -326,7 +326,7 @@ class UserViewModel(BasicViewSets):
                                   {"pull_all__group": groups}
                                   )
 
-    @user.post("/profile/")
+    @user.post("/image/profile/")
     async def set_profile(self,
                           photo: UploadFile = File(...),
                           user=Depends(get_current_user)
@@ -348,10 +348,15 @@ class UserViewModel(BasicViewSets):
 
         filemanager = FileManager("profile")
         await filemanager.save_file(photo.filename, photo.file)
-        self.atomic_update({"username": user.username}, {"set__profile": None})
+
+        # Update Database Instance
+        self.atomic_update({"username": user.username},
+                           {"set__profile": photo.filename}
+                           )
+
         return {"status": 200, "details": photo.filename}
 
-    @user.get("/profile/{path}", response_class=FileResponse)
+    @user.get("/image/profile/{path}", response_class=FileResponse)
     async def get_profile(self,
                           path: str,
                           ):
@@ -368,9 +373,8 @@ class UserViewModel(BasicViewSets):
         # file = filemanager.get_file(path)
         return filemanager.get_file(path)
 
-    @user.delete("/profile/{name}")
+    @user.delete("/image/profile/")
     async def unset_profile(self,
-                            name: str,
                             user=Depends(get_current_user)
                             ):
         """Remove Profile image.
@@ -383,7 +387,7 @@ class UserViewModel(BasicViewSets):
 
         """
         filemanager = FileManager("profile")
-        filemanager.delete_file(name)
+        filemanager.delete_file(user.profile)
         self.atomic_update({"username": user.username}, {"set__profile": None})
 
         return {"status": 200, "detial": "Success"}

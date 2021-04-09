@@ -19,7 +19,7 @@ class FileManager:
         if os.path.exists(filename):
             return FileResponse(filename)
 
-        raise ModelException.not_found("Requested Files")
+        raise ModelException.not_found("file {}".format(filename))
 
     async def save_file(self, name, file):
         # Get Filename and Path
