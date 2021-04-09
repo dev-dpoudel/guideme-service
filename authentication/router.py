@@ -388,6 +388,8 @@ class UserViewModel(BasicViewSets):
         """
         filemanager = FileManager("profile")
         filemanager.delete_file(user.profile)
-        self.atomic_update({"username": user.username}, {"set__profile": None})
+        self.atomic_update({"username": user.username},
+                           {"set__profile": None}
+                           )
 
         return {"status": 200, "detial": "Success"}
