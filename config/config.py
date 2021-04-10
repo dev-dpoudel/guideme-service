@@ -41,6 +41,8 @@ class AppSettings(DatabaseSettings, SessionSettings):
     admin_email: str = "ryon_a@hotmail.com"
     test_email: str = "dinesh.poudel_nepal@outlook.com"
     base_path: str = os.path.join(ROOT_DIR, 'files')
+    profile_dir: str = os.path.join(ROOT_DIR, 'logs')
+    log_dir: str = os.path.join(ROOT_DIR, 'logs')
 
     # Get Environmental Variables from environment files
     class Config:

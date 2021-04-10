@@ -1,11 +1,12 @@
 # import profilers
-# from fastapi_cprofile.profiler import CProfileMiddleware
+from fastapi_cprofile.profiler import CProfileMiddleware
 # import from mongoengine
 from mongoengine import connect, disconnect
 # import from typing
 # import from fastapi
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi import Depends
 # import from pydantic
 # import custom dependencies
@@ -21,7 +22,7 @@ from media.router import media
 # Instantiate FastAPI instance
 # Declare dependencies if any as : dependencies=(dependencyA,dependencyB)
 app = FastAPI()
-
+settings = get_settings()
 
 # Decleare CORS allowed origins
 # List of Allowed host
@@ -41,17 +42,20 @@ app.add_middleware(
     max_age=600
 )
 
+# Add GZipMiddleware
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 # starlette-opentracing
 # asgi-ratelimit
 # timing_asgi
 # Add Profiling Middlewares
 # Cprofile with snakeviz is used currently. File must be with .prof ext
-# app.add_middleware(CProfileMiddleware,
-#                    enable=True,
-#                    server_app=app,
-#                    filename='/home/alfaaz/programs/logs/guideme/service.prof',
-#                    strip_dirs=False,
-#                    sort_by='cumulative')
+if settings.in_development:
+    app.add_middleware(CProfileMiddleware,
+                       enable=True,
+                       server_app=app,
+                       filename=settings.profile_dir + '/service.prof',
+                       strip_dirs=False,
+                       sort_by='cumulative')
 
 
 # Provide router definition for application modules
@@ -85,18 +89,19 @@ def shutdown_event():
     disconnect(alias='default')
 
 
-# Declare Endpoint for app settings and informations
-@app.get("/info", tags=['information'])
-async def info(settings: AppSettings = Depends(get_settings)):
-    return {
-        "app_name": settings.app_name,
-        "admin_email": settings.admin_email,
-        "default_page_size": settings.default_page_size,
-        "token_active_time": "{0} minutes".format(settings.session_time),
-        "db": settings.db_name,
-        "db_host": settings.db_host,
-        "db_port": settings.db_port,
-        "algorithm": settings.algorithm,
-        "secret_key": settings.secret_key,
-        "profile_path": settings.base_path
-    }
+if settings.in_development:
+    # Declare Endpoint for app settings and informations
+    @app.get("/info", tags=['information'])
+    async def info(settings: AppSettings = Depends(get_settings)):
+        return {
+            "app_name": settings.app_name,
+            "admin_email": settings.admin_email,
+            "default_page_size": settings.default_page_size,
+            "token_active_time": "{0} minutes".format(settings.session_time),
+            "db": settings.db_name,
+            "db_host": settings.db_host,
+            "db_port": settings.db_port,
+            "algorithm": settings.algorithm,
+            "secret_key": settings.secret_key,
+            "profile_path": settings.profile_dir
+        }
