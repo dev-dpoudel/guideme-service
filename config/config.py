@@ -44,7 +44,7 @@ class AppSettings(DatabaseSettings, SessionSettings):
 
     # Get Environmental Variables from environment files
     class Config:
-        env_file = ".sysenv"
+        env_file = "config/.env"
 
 
 # Decalre Dependency for App Settings
